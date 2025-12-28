@@ -1,0 +1,10 @@
+2025-12-29 00:34:18 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2025-12-29 00:34:18 - core.sensor_reader - INFO - [sensor_reader.py:173] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-29 00:34:18 - core.sensor_reader - INFO - [sensor_reader.py:132] - Sensor reader initialized with frequency 3200.0 Hz
+2025-12-29 00:34:28 - core.sensor_reader - ERROR - [sensor_reader.py:286] - Failed to read scalar values: Failed to read register 40043 after 3 attempts: No communication with the instrument (no answer)
+2025-12-29 00:34:34 - core.sensor_reader - WARNING - [sensor_reader.py:468] - Connection test failed, attempting reconnect: Failed to read register 40043 after 2 attempts: No communication with the instrument (no answer)
+2025-12-29 00:34:34 - core.sensor_reader - INFO - [sensor_reader.py:173] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-29 00:34:43 - core.sensor_reader - ERROR - [sensor_reader.py:286] - Failed to read scalar values: Failed to read register 40043 after 3 attempts: No communication with the instrument (no answer)
+2025-12-29 00:34:49 - core.sensor_reader - WARNING - [sensor_reader.py:468] - Connection test failed, attempting reconnect: Failed to read register 40043 after 2 attempts: No communication with the instrument (no answer)
+2025-12-29 00:34:49 - core.sensor_reader - INFO - [sensor_reader.py:173] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-29 00:34:59 - core.sensor_reader - ERROR - [sensor_reader.py:286] - Failed to read scalar values: Failed to read register 40043 after 3 attempts: No communication with the instrument (no answer)

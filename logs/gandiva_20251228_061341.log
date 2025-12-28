@@ -1,0 +1,5 @@
+2025-12-28 06:13:44 - core.sensor_reader - ERROR - [sensor_reader.py:176] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2025-12-28 06:13:44 - core.sensor_reader - ERROR - [sensor_reader.py:134] - Failed to initialize sensor reader: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2025-12-28 06:13:44 - core.sensor_reader - ERROR - [sensor_reader.py:593] - Failed to initialize reader: Initialization failed: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2025-12-28 06:16:27 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2025-12-28 06:16:27 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'

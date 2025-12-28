@@ -1,0 +1,12 @@
+2025-12-27 18:15:49 - core.sensor_reader - ERROR - [sensor_reader.py:136] - Failed to initialize Modbus instrument on COM3: could not open port 'COM3': OSError(22, 'The semaphore timeout period has expired.', None, 121)
+2025-12-27 18:15:49 - core.sensor_reader - ERROR - [sensor_reader.py:94] - Failed to initialize sensor reader: Modbus init failed on COM3: could not open port 'COM3': OSError(22, 'The semaphore timeout period has expired.', None, 121)
+2025-12-27 18:15:49 - core.sensor_reader - ERROR - [sensor_reader.py:430] - Failed to initialize reader: Initialization failed: Modbus init failed on COM3: could not open port 'COM3': OSError(22, 'The semaphore timeout period has expired.', None, 121)
+2025-12-27 18:15:49 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 18:15:50 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 18:15:51 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 18:15:52 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 18:15:53 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 18:15:54 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 18:15:55 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 18:15:56 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 18:15:57 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized

@@ -1,0 +1,14 @@
+2025-12-28 06:22:58 - core.sensor_reader - INFO - [sensor_reader.py:173] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-28 06:22:58 - core.sensor_reader - INFO - [sensor_reader.py:132] - Sensor reader initialized with frequency 3200.0 Hz
+2025-12-28 06:23:02 - core.sensor_reader - ERROR - [sensor_reader.py:329] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-28 06:23:02 - core.sensor_reader - WARNING - [sensor_reader.py:411] - Extended bands not supported by this sensor: Register block read failed: No communication with the instrument (no answer)
+2025-12-28 06:23:47 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2025-12-28 06:23:47 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-28 06:23:57 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-28 06:26:29 - api.dataset_api - INFO - [dataset_api.py:402] - Captured training sample: expansion_gap -> gandiva_captured_20251228.csv
+2025-12-28 06:26:56 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-28 06:27:18 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-28 06:27:18 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-28 06:27:19 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-28 06:27:19 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-28 06:27:33 - api.dataset_api - INFO - [dataset_api.py:219] - Deleted dataset: gandiva_captured_20251228.csv

@@ -1,0 +1,4 @@
+2025-12-28 10:11:25 - core.sensor_reader - INFO - [sensor_reader.py:173] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-28 10:11:25 - core.sensor_reader - INFO - [sensor_reader.py:132] - Sensor reader initialized with frequency 3200.0 Hz
+2025-12-28 10:11:26 - core.sensor_reader - ERROR - [sensor_reader.py:329] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-28 10:11:26 - core.sensor_reader - WARNING - [sensor_reader.py:411] - Extended bands not supported by this sensor: Register block read failed: No communication with the instrument (no answer)

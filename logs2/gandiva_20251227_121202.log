@@ -1,0 +1,386 @@
+2025-12-27 12:12:15 - core.sensor_reader - ERROR - [sensor_reader.py:136] - Failed to initialize Modbus instrument on COM3: could not open port 'COM3': OSError(22, 'The semaphore timeout period has expired.', None, 121)
+2025-12-27 12:12:15 - core.sensor_reader - ERROR - [sensor_reader.py:94] - Failed to initialize sensor reader: Modbus init failed on COM3: could not open port 'COM3': OSError(22, 'The semaphore timeout period has expired.', None, 121)
+2025-12-27 12:12:15 - core.sensor_reader - ERROR - [sensor_reader.py:430] - Failed to initialize reader: Initialization failed: Modbus init failed on COM3: could not open port 'COM3': OSError(22, 'The semaphore timeout period has expired.', None, 121)
+2025-12-27 12:12:15 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:16 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:17 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:18 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:19 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:20 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:21 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:22 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:23 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:24 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:25 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:26 - core.sensor_reader - ERROR - [sensor_reader.py:464] - Sensor read error: Sensor reader not initialized
+2025-12-27 12:12:27 - core.sensor_reader - INFO - [sensor_reader.py:133] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-27 12:12:27 - core.sensor_reader - INFO - [sensor_reader.py:92] - Sensor reader initialized with frequency 3200.0 Hz
+2025-12-27 12:12:31 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:12:31 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:12:31 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:12:31 - core.sensor_reader - INFO - [sensor_reader.py:133] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-27 12:12:31 - core.sensor_reader - INFO - [sensor_reader.py:92] - Sensor reader initialized with frequency 3200.0 Hz
+2025-12-27 12:12:35 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:12:35 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:12:35 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:12:35 - core.sensor_reader - INFO - [sensor_reader.py:133] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-27 12:12:35 - core.sensor_reader - INFO - [sensor_reader.py:92] - Sensor reader initialized with frequency 3200.0 Hz
+2025-12-27 12:12:42 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:12:42 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:12:42 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:12:42 - core.sensor_reader - INFO - [sensor_reader.py:133] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-27 12:12:42 - core.sensor_reader - INFO - [sensor_reader.py:92] - Sensor reader initialized with frequency 3200.0 Hz
+2025-12-27 12:12:46 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:12:46 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:12:46 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:12:50 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:12:50 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:12:50 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:12:53 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:12:53 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:12:53 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:12:57 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:12:57 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:12:57 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:00 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:00 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:00 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:03 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:03 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:03 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:07 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:07 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:07 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:10 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:10 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:10 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:14 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:14 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:14 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:17 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:17 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:17 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:21 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:21 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:21 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:24 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:24 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:24 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:28 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:28 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:28 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:31 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:31 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:31 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:35 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:35 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:35 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:38 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:38 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:38 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:42 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:42 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:42 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:45 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:45 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:45 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:49 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:49 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:49 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:52 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:52 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:52 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:56 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:56 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:56 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:13:59 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:13:59 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:13:59 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:03 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:03 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:03 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:06 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:06 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:06 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:09 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:09 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:09 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:13 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:13 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:13 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:16 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:16 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:16 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:20 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:20 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:20 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:23 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:23 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:23 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:27 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:27 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:27 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:30 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:30 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:30 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:34 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:34 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:34 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:37 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:37 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:37 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:41 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:41 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:41 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:44 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:44 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:44 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:48 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:48 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:48 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:51 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:51 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:51 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:54 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:54 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:54 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:14:58 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:14:58 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:14:58 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:01 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:01 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:01 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:05 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:05 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:05 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:08 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:08 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:08 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:12 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:12 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:12 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:18 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:18 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:18 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:22 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:22 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:22 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:25 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:25 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:25 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:29 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:29 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:29 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:32 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:32 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:32 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:35 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:35 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:35 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:39 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:39 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:39 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:42 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:42 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:42 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:46 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:46 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:46 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:49 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:49 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:49 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:53 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:53 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:53 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:15:56 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:15:56 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:15:56 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:00 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:00 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:00 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:03 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:03 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:03 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:07 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:07 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:07 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:10 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:10 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:10 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:16 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:16 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:16 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:20 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:20 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:20 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:23 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:23 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:23 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:27 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:27 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:27 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:30 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:30 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:30 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:34 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:34 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:34 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:37 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:37 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:37 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:41 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:41 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:41 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:44 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:44 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:44 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:48 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:48 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:48 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:51 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:51 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:51 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:54 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:54 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:54 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:16:58 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:16:58 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:16:58 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:02 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:02 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:02 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:05 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:05 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:05 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:09 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:09 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:09 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:12 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:12 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:12 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:16 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:16 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:16 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:19 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:19 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:19 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:23 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:23 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:23 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:26 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:26 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:26 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:30 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:30 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:30 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:33 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:33 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:33 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:36 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:36 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:36 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:40 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:40 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:40 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:43 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:43 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:43 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:47 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:47 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:47 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:50 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:50 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:50 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:54 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:54 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:54 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:17:58 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:17:58 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:17:58 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:01 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:01 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:01 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:04 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:04 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:04 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:08 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:08 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:08 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:11 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:11 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:11 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:15 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:15 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:15 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:18 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:18 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:18 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:22 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:22 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:22 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:25 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:25 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:25 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:29 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:29 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:29 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:32 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:32 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:32 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:35 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:35 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:35 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:39 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:39 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:39 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:42 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:42 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:42 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:46 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:46 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:46 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:49 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:49 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:49 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:53 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:53 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:53 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:18:59 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:18:59 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:18:59 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:03 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:03 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:03 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:06 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:06 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:06 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:10 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:10 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:10 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:13 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:13 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:13 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:16 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:16 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:16 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:20 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:20 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:20 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:23 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:23 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:23 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:30 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:30 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:30 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:33 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:33 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:33 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:37 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:37 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:37 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:40 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:40 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:40 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands
+2025-12-27 12:19:44 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-27 12:19:44 - core.sensor_reader - ERROR - [sensor_reader.py:346] - Failed to read band values: Register block read failed: No communication with the instrument (no answer)
+2025-12-27 12:19:44 - core.sensor_reader - WARNING - [sensor_reader.py:374] - Band read failed, using empty bands

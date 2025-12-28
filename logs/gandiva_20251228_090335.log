@@ -1,0 +1,22 @@
+2025-12-28 09:03:39 - core.sensor_reader - ERROR - [sensor_reader.py:176] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-12-28 09:03:39 - core.sensor_reader - ERROR - [sensor_reader.py:134] - Failed to initialize sensor reader: Modbus init failed on COM5: could not open port 'COM5': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-12-28 09:03:39 - core.sensor_reader - ERROR - [sensor_reader.py:599] - Failed to initialize reader: Initialization failed: Modbus init failed on COM5: could not open port 'COM5': FileNotFoundError(2, 'The system cannot find the file specified.', None, 2)
+2025-12-28 09:03:39 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:39 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:40 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:40 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:41 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:41 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:42 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:42 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:43 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:43 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:44 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:44 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:45 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:45 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:46 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:46 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:47 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:47 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
+2025-12-28 09:03:48 - core.sensor_reader - ERROR - [sensor_reader.py:633] - Sensor read error: Sensor reader not initialized
