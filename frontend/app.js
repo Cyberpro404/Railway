@@ -577,6 +577,11 @@ function setActiveTab(name){
     document.body.classList.remove('nav-open');
   }
 
+  if (name === 'thresholds'){
+    // Always refresh thresholds when opening the tab so edits from other clients are reflected
+    refreshThresholds();
+  }
+
   if (latest){
     if (name === 'overview'){
       updateKpis();
@@ -595,6 +600,8 @@ function setActiveTab(name){
       renderAllBandsSnapshot();
       renderSpectrum();
       refreshHealthHistory();
+      renderIso10816Panel();
+      renderBearingDiagnosticsPanel();
     }
     if (name === 'system'){
       renderSystemInfo();
@@ -797,18 +804,40 @@ function updateMLOverviewHero() {
   let displayLabel = 'NORMAL';
   let iconName = 'shield-check';
   
-  if (label === 'normal' || label === 'good') {
+  // Normalize label for comparison
+  const normalizedLabel = label.replace('expansion_', '');
+  
+  // Check for idle state first (highest priority)
+  if (normalizedLabel === 'idle' || latest?.train_state === 'idle') {
+    heroClass = 'ml-overview-hero is-idle';
+    displayLabel = 'TRAIN IDLE';
+    iconName = 'pause';
+  }
+  // Then check other prediction types
+  else if (normalizedLabel === 'normal' || normalizedLabel === 'good') {
     heroClass = 'ml-overview-hero';
     displayLabel = 'TRACK OK';
     iconName = 'shield-check';
-  } else if (label === 'expansion_gap' || label === 'gap') {
+  } else if (normalizedLabel === 'gap' || label === 'expansion_gap') {
     heroClass = 'ml-overview-hero is-gap';
     displayLabel = 'EXPANSION GAP';
     iconName = 'minus-circle';
-  } else if (label === 'crack' || label === 'defect') {
+    
+    // If train is idle but gap is detected, show warning
+    if (latest?.train_state === 'idle') {
+      displayLabel = 'WARNING: GAP DETECTED';
+      iconName = 'alert-triangle';
+    }
+  } else if (normalizedLabel === 'crack' || normalizedLabel === 'defect') {
     heroClass = 'ml-overview-hero is-crack';
     displayLabel = 'CRACK DETECTED';
     iconName = 'alert-triangle';
+    
+    // If train is idle but crack is detected, show critical warning
+    if (latest?.train_state === 'idle') {
+      displayLabel = 'CRITICAL: CRACK DETECTED';
+      iconName = 'alert-octagon';
+    }
   }
   
   heroEl.className = heroClass;
@@ -874,7 +903,16 @@ function updateMLPredictionKpi(){
   let bannerText = 'GOOD TRACK';
   let bannerIcon = 'shield-check';
   
-  if (normalizedLabel === 'normal' || normalizedLabel === 'good') {
+  // Check for idle state first (highest priority)
+  if (normalizedLabel === 'idle' || latest?.train_state === 'idle') {
+    statusClass = 'kpi__status--neutral';
+    bannerClass = 'ml-banner--idle';
+    bannerText = 'TRAIN IDLE — All readings normal';
+    bannerIcon = 'pause';
+    displayLabel = 'IDLE';
+  } 
+  // Then check for other prediction types
+  else if (normalizedLabel === 'normal' || normalizedLabel === 'good') {
     statusClass = 'kpi__status--ok';
     bannerClass = 'ml-banner--normal';
     bannerText = 'TRACK NORMAL — ALL CLEAR';
@@ -886,25 +924,30 @@ function updateMLPredictionKpi(){
     bannerText = 'EXPANSION GAP DETECTED';
     bannerIcon = 'alert-triangle';
     displayLabel = 'GAP';
+    
+    // If train is idle but gap is detected, show warning
+    if (latest?.train_state === 'idle') {
+      bannerText = 'WARNING: Gap detected while train is idle';
+      statusClass = 'kpi__status--warning';
+    }
   } else if (normalizedLabel === 'crack' || normalizedLabel === 'defect' || label === 'crack_or_defect') {
     statusClass = 'kpi__status--alarm';
     bannerClass = 'ml-banner--crack';
     bannerText = 'CRACK DETECTED — INSPECT NOW';
     bannerIcon = 'alert-octagon';
     displayLabel = 'CRACK';
+    
+    // If train is idle but crack is detected, show critical warning
+    if (latest?.train_state === 'idle') {
+      bannerText = 'CRITICAL: Crack detected while train is idle';
+      statusClass = 'kpi__status--alarm';
+    }
   } else {
     // Unknown or other fault types
     statusClass = 'kpi__status--warning';
     bannerClass = '';
     bannerText = displayLabel;
     bannerIcon = 'help-circle';
-  }
-
-  // If backend reports train is idle, show a dedicated idle banner overriding ML banner
-  if (latest?.train_state === 'idle'){
-    bannerClass = 'ml-banner--idle';
-    bannerText = 'TRAIN IDLE — Baseline readings';
-    bannerIcon = 'pause';
   }
   
   // Update KPI elements
@@ -1305,6 +1348,61 @@ function renderHealthDetailFromLatest(){
   dot.classList.remove('is-ok','is-warn','is-bad');
   dot.classList.add(dotClass(level));
   qs('healthStatus').textContent = level.toUpperCase();
+
+  renderIso10816Panel();
+  renderBearingDiagnosticsPanel();
+}
+
+function renderIso10816Panel(){
+  const body = qs('isoPanelBody');
+  if (!body) return;
+  const iso = latest?.iso10816;
+  if (!iso){
+    body.innerHTML = '<div class="muted">No ISO 10816 data</div>';
+    return;
+  }
+  const z = String(iso.z_axis || 'unknown').toUpperCase();
+  const x = String(iso.x_axis || 'unknown').toUpperCase();
+  const cls = iso.machine_class || 'class_II';
+  const limits = iso.limits || {};
+  body.innerHTML = `
+    <div class="isoRow">
+      <div class="isoItem"><div class="muted">Z Axis</div><div class="pill">${z}</div></div>
+      <div class="isoItem"><div class="muted">X Axis</div><div class="pill">${x}</div></div>
+    </div>
+    <div class="muted" style="margin-top:6px">Machine Class: ${cls}</div>
+    <div class="muted" style="margin-top:4px">Limits (mm/s): A≤${fmt(limits.zone_a_max||0,2)} · B≤${fmt(limits.zone_b_max||0,2)} · C≤${fmt(limits.zone_c_max||0,2)}</div>
+  `;
+}
+
+function renderBearingDiagnosticsPanel(){
+  const body = qs('bearingPanelBody');
+  if (!body) return;
+  const diag = latest?.bearing_diagnostics;
+  if (!diag){
+    body.innerHTML = '<div class="muted">No bearing diagnostics</div>';
+    return;
+  }
+  const status = String(diag.overall_status || 'unknown').toUpperCase();
+  const alerts = Array.isArray(diag.alerts) ? diag.alerts : [];
+  const crest = diag.crest_factor?.details || {};
+  const kurt = diag.kurtosis?.details || {};
+  const hf = diag.hf_trend?.details || {};
+
+  const alertList = alerts.length
+    ? '<ul>' + alerts.map(a => `<li>${a}</li>`).join('') + '</ul>'
+    : '<div class="muted">No active alerts</div>';
+
+  body.innerHTML = `
+    <div class="muted">Overall</div>
+    <div class="pill">${status}</div>
+    <div class="grid2" style="margin-top:8px; gap:8px">
+      <div><div class="muted">Crest Factor</div><div>${fmt(crest.z_axis_cf || crest.x_axis_cf || 0,3)}</div></div>
+      <div><div class="muted">Kurtosis</div><div>${fmt(kurt.z_axis_kurtosis || kurt.x_axis_kurtosis || 0,3)}</div></div>
+    </div>
+    <div class="muted" style="margin-top:8px">Alerts</div>
+    ${alertList}
+  `;
 }
 
 async function refreshHealthHistory(){
@@ -1871,6 +1969,8 @@ async function refreshLatest(){
         renderAllBandsSnapshot();
         renderSpectrum();
         appendHealthLatest();
+        renderIso10816Panel();
+        renderBearingDiagnosticsPanel();
       } catch (renderError) {
         console.error('Render error in health:', renderError);
       }
@@ -2297,7 +2397,6 @@ async function boot(){
   await refreshLogs();
   await refreshMLStatus();
   
-  // Initialize ML Insights and Datasets
   initMLInsights();
   initDatasets();
   

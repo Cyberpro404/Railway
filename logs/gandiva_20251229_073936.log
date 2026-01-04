@@ -1,0 +1,7 @@
+2025-12-29 07:39:40 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2025-12-29 07:39:40 - core.sensor_reader - INFO - [sensor_reader.py:181] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-29 07:39:40 - core.sensor_reader - INFO - [sensor_reader.py:140] - Sensor reader initialized with frequency 3200.0 Hz
+2025-12-29 07:39:44 - core.sensor_reader - ERROR - [sensor_reader.py:349] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-29 07:39:44 - core.sensor_reader - WARNING - [sensor_reader.py:431] - Extended bands not supported by this sensor: Register block read failed: No communication with the instrument (no answer)
+2025-12-29 07:40:05 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-29 07:45:25 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'

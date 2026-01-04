@@ -5,9 +5,10 @@ import csv
 import io
 import os
 import random
+import time
 from collections import deque
 from datetime import datetime, timedelta, timezone
-from typing import Literal
+from typing import Literal, Optional
 import uuid
 
 from fastapi import FastAPI, HTTPException, Response
@@ -16,6 +17,10 @@ from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 
 import logging
+
+from utils.iso10816 import ISO10816Classifier
+from utils.bearing_diagnostics import BearingDiagnosticsSuite
+from utils import formatters
 
 from pydantic import BaseModel
 
@@ -80,6 +85,11 @@ IDLE_RMS_THRESHOLD = 0.5  # 0.5 mm/s accounts for sensor noise and ambient vibra
 _sensor_error_count = 0  # Track consecutive sensor errors
 _max_sensor_errors = 1
 
+# ISO 10816 classifier and bearing diagnostics suite
+_machine_class: str = "class_II"
+_iso_classifier = ISO10816Classifier(machine_class=_machine_class)
+_bearing_suite = BearingDiagnosticsSuite()
+
 
 class _SoundSetting(BaseModel):
     enabled: bool
@@ -140,8 +150,12 @@ def _maybe_create_alert(
     if _sound_enabled and winsound is not None:
         try:
             if severity == "alarm":
-                winsound.Beep(1500, 180)
+                # Two short beeps for alarm conditions
+                for _ in range(2):
+                    winsound.Beep(1500, 140)
+                    time.sleep(0.06)
             else:
+                # Single beep for warning conditions
                 winsound.Beep(1100, 120)
         except Exception:
             pass
@@ -219,15 +233,98 @@ def _check_thresholds(reading: dict) -> None:
         _evaluate_parameter(ts, f"band_x_{n}_peak_rms", float(b.get("peak_rms", 0.0)), bt.peak_rms_warning, bt.peak_rms_alarm, "")
 
 
+def _compute_data_quality(prev: Optional[dict], current: dict) -> dict:
+    """Assess frozen/step-change and band availability for confidence scoring."""
+    frozen = False
+    step_change = False
+    keys = ("z_rms_mm_s", "x_rms_mm_s", "temp_c")
+    if prev:
+        deltas = []
+        for k in keys:
+            try:
+                pv = float(prev.get(k, 0.0) or 0.0)
+                cv = float(current.get(k, 0.0) or 0.0)
+                tol = max(0.0005, abs(pv) * 0.005)
+                deltas.append(abs(cv - pv) <= tol)
+                # Step-change: large jump relative to previous magnitude
+                baseline = max(abs(pv), 0.01)
+                if abs(cv - pv) > max(0.5, baseline * 0.5):
+                    step_change = True
+            except Exception:
+                continue
+        if deltas and all(deltas):
+            frozen = True
+    missing_bands = not current.get("bands_z") and not current.get("bands_x")
+    return {
+        "frozen": frozen,
+        "step_change": step_change,
+        "missing_bands": missing_bands,
+    }
+
+
+def _compute_confidence(data_quality: dict, health: dict, reading: dict) -> float:
+    """Compute per-sample confidence based on comms and signal quality."""
+    success_rate = float(health.get("success_rate", 1.0) or 0.0)
+    score = 0.5 + 0.5 * success_rate  # anchor to comms quality
+    if data_quality.get("missing_bands"):
+        score -= 0.15
+    if data_quality.get("frozen"):
+        score -= 0.25
+    if data_quality.get("step_change"):
+        score -= 0.25
+    iso = reading.get("iso10816", {}) or {}
+    if iso.get("z_axis") == "D" or iso.get("x_axis") == "D":
+        score -= 0.1
+    return round(max(0.0, min(1.0, score)), 3)
+
+
+def _infer_fault_label(reading: dict, data_quality: dict) -> str:
+    """Derive an interpretable fault label using RPM harmonics and diagnostics."""
+    iso = reading.get("iso10816", {}) or {}
+    bearing = reading.get("bearing_diagnostics", {}) or {}
+    rpm = float(reading.get("rpm", 0.0) or 0.0)
+    fundamental = rpm / 60.0 if rpm > 0 else None
+
+    peak_freq = None
+    bands = reading.get("bands_z") or reading.get("bands_x") or []
+    if bands:
+        try:
+            dominant = max(bands, key=lambda b: float(b.get("peak_rms", 0.0) or 0.0))
+            peak_freq = float(dominant.get("peak_freq_hz", 0.0) or 0.0)
+        except Exception:
+            peak_freq = None
+
+    if iso.get("z_axis") == "D" or iso.get("x_axis") == "D":
+        return "iso_zone_d_high_vibration"
+    if bearing.get("overall_status") in {"warning", "alert", "alarm"}:
+        return "bearing_impulse_energy"
+
+    if fundamental and peak_freq:
+        if abs(peak_freq - fundamental) <= 0.2 * fundamental:
+            return "imbalance_suspected"
+        if abs(peak_freq - 2 * fundamental) <= 0.2 * fundamental:
+            return "misalignment_possible"
+        if abs(peak_freq - 3 * fundamental) <= 0.25 * fundamental:
+            return "mechanical_looseness_possible"
+
+    if data_quality.get("step_change"):
+        return "sudden_change_check_mounts"
+    if data_quality.get("frozen"):
+        return "signal_frozen_check_sensor"
+
+    return "normal"
+
+
 async def _poll_sensor_loop() -> None:
     global _latest, _sensor_status, _sensor_error_message, _sensor_error_count
     loop = asyncio.get_running_loop()
     # Sensor polling interval (seconds). Lower values give faster ML updates
     # but increase Modbus traffic and CPU usage.
-    interval_s = 0.5
+    interval_s = 5.0
     next_tick = loop.time()
     while True:
         try:
+            prev_reading = _latest
             status, reading = await asyncio.to_thread(sensor_reader.read_sensor_once)
             if status == sensor_reader.SensorStatus.OK and reading is not None:
                 # Reset error count on successful read
@@ -241,6 +338,41 @@ async def _poll_sensor_loop() -> None:
                         x_rms = float(reading.get("x_rms_mm_s", 0.0))
                     except Exception:
                         z_rms = x_rms = 0.0
+
+                    # ISO 10816 classification per axis
+                    try:
+                        reading["iso10816"] = {
+                            "z_axis": _iso_classifier.classify(z_rms),
+                            "x_axis": _iso_classifier.classify(x_rms),
+                            "machine_class": _machine_class,
+                            "limits": _iso_classifier.get_limits(),
+                        }
+                    except Exception:
+                        reading["iso10816"] = {"z_axis": "unknown", "x_axis": "unknown", "machine_class": _machine_class}
+
+                    # Bearing diagnostics (crest factor, kurtosis, HF RMS if available)
+                    try:
+                        reading["bearing_diagnostics"] = _bearing_suite.analyze_full(
+                            cf_z=float(reading.get("z_crest_factor", 0.0) or 0.0),
+                            cf_x=float(reading.get("x_crest_factor", 0.0) or 0.0),
+                            kurt_z=float(reading.get("z_kurtosis", 0.0) or 0.0),
+                            kurt_x=float(reading.get("x_kurtosis", 0.0) or 0.0),
+                            hf_z=float(reading.get("z_hf_rms_g", 0.0) or 0.0),
+                            hf_x=float(reading.get("x_hf_rms_g", 0.0) or 0.0),
+                        )
+                    except Exception:
+                        reading["bearing_diagnostics"] = {
+                            "overall_status": "unknown",
+                            "alerts": [],
+                            "alert_count": 0,
+                        }
+
+                    # Data quality and confidence scoring
+                    health_stats = sensor_reader.get_health_stats()
+                    dq = _compute_data_quality(prev_reading, reading)
+                    reading["data_quality"] = dq
+                    reading["confidence"] = _compute_confidence(dq, health_stats, reading)
+                    reading["fault_label"] = _infer_fault_label(reading, dq)
 
                     if z_rms < IDLE_RMS_THRESHOLD and x_rms < IDLE_RMS_THRESHOLD:
                         reading["train_state"] = "idle"
@@ -436,6 +568,45 @@ def api_latest_status() -> dict:
     return {"status": _sensor_status, "error_message": _sensor_error_message, "reading": db_latest}
 
 
+@app.get("/api/diagnostics")
+def api_diagnostics() -> dict:
+    """Return diagnostics: connection health, ISO10816, bearing health."""
+    health = sensor_reader.get_health_stats()
+    latest = _latest
+    iso = latest.get("iso10816") if latest else None
+    bearing = latest.get("bearing_diagnostics") if latest else None
+    return {
+        "connection_health": health,
+        "iso10816": iso,
+        "bearing": bearing,
+        "sensor_status": _sensor_status,
+        "error_message": _sensor_error_message,
+    }
+
+
+@app.get("/api/industrial/latest")
+def api_industrial_latest() -> dict:
+    """Return formatted industrial JSON with diagnostics."""
+    latest = _latest
+    if latest is None:
+        raise HTTPException(status_code=404, detail="No readings available")
+    health = sensor_reader.get_health_stats()
+    iso = latest.get("iso10816") or {}
+    bearing = latest.get("bearing_diagnostics") or {}
+    cfg = {
+        "port": _connection.port,
+        "slave_id": _connection.slave_id,
+        "baudrate": _connection.baudrate,
+    }
+    return formatters.format_industrial_json(
+        latest,
+        iso_zones={"z_axis": iso.get("z_axis", "unknown"), "x_axis": iso.get("x_axis", "unknown")},
+        bearing_diagnostics=bearing,
+        connection_health=health,
+        config=cfg,
+    )
+
+
 
 
 
@@ -487,6 +658,65 @@ def api_ml_test() -> dict:
     }
 
 
+@app.get("/api/ml/realtime-stats")
+def api_ml_realtime_stats(limit: int = 50) -> dict:
+    """Aggregate recent ML predictions for the ML Insights tab.
+
+    Returns class distribution, confidence buckets, and recent prediction rows.
+    """
+    try:
+        source = get_db().get_history(seconds=3600)
+    except Exception:
+        source = list(_history)
+
+    recent_predictions: list[dict] = []
+    for row in reversed(list(source)):
+        pred = row.get("ml_prediction")
+        if not pred:
+            continue
+        recent_predictions.append({
+            "timestamp": row.get("timestamp"),
+            "label": pred.get("label"),
+            "confidence": float(pred.get("confidence", 0.0) or 0.0),
+            "z_rms": float(row.get("z_rms_mm_s", 0.0) or 0.0),
+            "x_rms": float(row.get("x_rms_mm_s", 0.0) or 0.0),
+            "temp": float(row.get("temp_c", 0.0) or 0.0),
+        })
+        if len(recent_predictions) >= max(1, limit):
+            break
+
+    class_distribution: dict[str, int] = {"normal": 0, "expansion_gap": 0, "crack": 0}
+    confidence_distribution: dict[str, int] = {"high": 0, "medium": 0, "low": 0}
+
+    total_conf = 0.0
+    for p in recent_predictions:
+        conf = float(p.get("confidence", 0.0) or 0.0)
+        total_conf += conf
+
+        label_key = str(p.get("label") or "").lower()
+        class_distribution[label_key] = class_distribution.get(label_key, 0) + 1
+
+        if conf >= 0.8:
+            confidence_distribution["high"] += 1
+        elif conf >= 0.5:
+            confidence_distribution["medium"] += 1
+        else:
+            confidence_distribution["low"] += 1
+
+    average_confidence = total_conf / len(recent_predictions) if recent_predictions else 0.0
+
+    payload = {
+        "class_distribution": class_distribution,
+        "confidence_distribution": confidence_distribution,
+        "average_confidence": average_confidence,
+        "recent_predictions": recent_predictions,
+        "total_predictions": len(recent_predictions),
+    }
+
+    # Provide both nested and flat payload for compatibility with existing frontend logic
+    return {"data": payload, **payload}
+
+
 @app.get("/api/history")
 def api_history(seconds: int = 600) -> list[dict]:
     try:
@@ -507,6 +737,23 @@ def api_history(seconds: int = 600) -> list[dict]:
 @app.get("/api/connection")
 def api_get_connection() -> ConnectionConfig:
     return _connection
+
+
+@app.post("/api/config/iso10816")
+def api_set_iso_class(machine_class: Literal["class_I", "class_II", "class_III", "class_IV"]) -> dict:
+    """Set ISO10816 machine class used for severity classification."""
+    global _machine_class, _iso_classifier
+    _machine_class = machine_class
+    _iso_classifier = ISO10816Classifier(machine_class=machine_class)
+    return {"status": "ok", "machine_class": machine_class, "limits": _iso_classifier.get_limits()}
+
+
+@app.post("/api/config/hex-logging")
+def api_set_hex_logging(enabled: bool = True) -> dict:
+    """Enable/disable hex frame logging for Modbus diagnostics."""
+    from core import sensor_reader as sr
+    sr.enable_hex_logging(bool(enabled))
+    return {"enabled": bool(enabled)}
 
 
 @app.post("/api/connection")

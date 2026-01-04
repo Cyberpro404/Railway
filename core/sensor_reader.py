@@ -72,6 +72,39 @@ logger = setup_logger(__name__)
 _extended_bands_supported = True
 _extended_bands_check_done = False
 
+# Hex frame logging flag (can be enabled for diagnostics)
+_hex_logging_enabled = False
+
+
+def enable_hex_logging(enabled: bool = True):
+    """
+    Enable/disable hex frame logging for diagnostics.
+    
+    When enabled, logs raw Modbus frames for troubleshooting.
+    
+    Args:
+        enabled: True to enable, False to disable
+    """
+    global _hex_logging_enabled
+    _hex_logging_enabled = enabled
+    if enabled:
+        logger.info("Hex frame logging enabled")
+    else:
+        logger.info("Hex frame logging disabled")
+
+
+def _log_modbus_frame(direction: str, frame: bytes):
+    """
+    Log raw Modbus frame in hex format.
+    
+    Args:
+        direction: "TX" for transmit, "RX" for receive
+        frame: Raw frame bytes
+    """
+    if _hex_logging_enabled:
+        hex_str = ' '.join(f'{b:02X}' for b in frame)
+        logger.debug(f"[{direction}] {hex_str}")
+
 
 class SensorStatus(Enum):
     """Sensor status enumeration."""
@@ -83,6 +116,57 @@ class SensorStatus(Enum):
 class SensorReaderError(SensorError):
     """Sensor reader specific error."""
     pass
+
+
+class ConnectionHealth:
+    """
+    Connection health tracking for diagnostics.
+    
+    Tracks success rate, consecutive failures, and communication statistics.
+    """
+    
+    def __init__(self):
+        """Initialize health tracker."""
+        self.consecutive_failures = 0
+        self.total_reads = 0
+        self.failed_reads = 0
+        self.last_success_time: Optional[float] = None
+        self.last_error: Optional[str] = None
+        self.last_error_time: Optional[float] = None
+    
+    def record_success(self):
+        """Record successful read."""
+        self.consecutive_failures = 0
+        self.total_reads += 1
+        self.last_success_time = time.time()
+    
+    def record_failure(self, error_msg: str = ""):
+        """Record failed read."""
+        self.consecutive_failures += 1
+        self.total_reads += 1
+        self.failed_reads += 1
+        self.last_error = error_msg
+        self.last_error_time = time.time()
+    
+    @property
+    def success_rate(self) -> float:
+        """Get success rate (0.0 to 1.0)."""
+        if self.total_reads == 0:
+            return 0.0
+        return (self.total_reads - self.failed_reads) / self.total_reads
+    
+    def get_stats(self) -> Dict[str, any]:
+        """Get health statistics."""
+        return {
+            "consecutive_failures": self.consecutive_failures,
+            "total_reads": self.total_reads,
+            "failed_reads": self.failed_reads,
+            "success_rate": self.success_rate,
+            "last_success_time": self.last_success_time,
+            "last_error": self.last_error,
+            "last_error_time": self.last_error_time,
+            "uptime_hours": (time.time() - self.last_success_time) / 3600 if self.last_success_time else 0
+        }
 
 
 _DIRECT_HOLDING_BASE = 40001
@@ -137,6 +221,7 @@ class SensorReader:
             self._frequency_hz = frequency_hz
             self._config = config
             self._instrument = self._init_instrument(config)
+            self._health = ConnectionHealth()
             logger.info(f"Sensor reader initialized with frequency {frequency_hz} Hz")
         except Exception as e:
             logger.error(f"Failed to initialize sensor reader: {e}")
@@ -199,6 +284,15 @@ class SensorReader:
     def frequency_hz(self) -> float:
         """Get current sampling frequency in Hz."""
         return self._frequency_hz
+    
+    @property
+    def health(self) -> ConnectionHealth:
+        """Get connection health tracker."""
+        return self._health
+    
+    def get_health_stats(self) -> Dict[str, any]:
+        """Get connection health statistics."""
+        return self._health.get_stats()
     
     def set_frequency(self, frequency_hz: float) -> None:
         """
@@ -272,7 +366,7 @@ class SensorReader:
             SensorReaderError: If read fails
         """
         try:
-            return {
+            scalars = {
                 # Temperature: 40043, 16-bit signed, scale 0.01 °C
                 "temp_c": float(self._read_register(40043, decimals=2, signed=True)),
                 # Z-axis RMS: 42403, 16-bit unsigned, scale 0.001 mm/s
@@ -302,6 +396,14 @@ class SensorReader:
                 # Frequency (not from sensor, for record)
                 "frequency_hz": self._frequency_hz,
             }
+
+            # Optional RPM read (40204): 16-bit unsigned, scale 1 RPM; tolerate absence
+            try:
+                scalars["rpm"] = float(self._read_register(40204, decimals=0, signed=False))
+            except Exception as rpm_err:
+                logger.debug(f"RPM register not available/failed: {rpm_err}")
+
+            return scalars
         except Exception as e:
             logger.error(f"Failed to read scalar values: {e}")
             raise
@@ -485,9 +587,11 @@ class SensorReader:
                 self._read_register(40043, decimals=2, signed=True, retries=1)
             except SensorReaderError as e:
                 logger.warning(f"Connection test failed, attempting reconnect: {e}")
+                self._health.record_failure(f"Connection test failed: {e}")
                 try:
                     self._instrument = self._init_instrument(self._config)
                 except Exception:
+                    self._health.record_failure("Reconnection failed")
                     return SensorStatus.ERROR, {
                         "ok": False,
                         "error": "Connection failed - no response from sensor",
@@ -498,6 +602,7 @@ class SensorReader:
             try:
                 scalars = self.read_scalar_values()
             except Exception as e:
+                self._health.record_failure(f"Scalar read failed: {e}")
                 return SensorStatus.ERROR, {
                     "ok": False,
                     "error": f"Failed to read scalar values: {e}",
@@ -529,10 +634,14 @@ class SensorReader:
             if bands_z is None and simple_bands is None:
                 reading["band_warning"] = "No band data available - check sensor registers"
             
+            # Record successful read
+            self._health.record_success()
+            
             return SensorStatus.OK, reading
             
         except Exception as e:
             logger.error(f"Sensor read failed: {e}")
+            self._health.record_failure(str(e))
             return SensorStatus.ERROR, {
                 "ok": False,
                 "error": str(e),
@@ -676,3 +785,22 @@ def get_frequency() -> float:
     """Get the current sampling frequency."""
     with _lock:
         return get_reader().frequency_hz
+
+
+def get_health_stats() -> Dict[str, any]:
+    """Get connection health statistics."""
+    with _lock:
+        try:
+            return get_reader().get_health_stats()
+        except SensorReaderError:
+            return {
+                "consecutive_failures": 0,
+                "total_reads": 0,
+                "failed_reads": 0,
+                "success_rate": 0.0,
+                "last_success_time": None,
+                "last_error": "Sensor not initialized",
+                "last_error_time": None,
+                "uptime_hours": 0
+            }
+

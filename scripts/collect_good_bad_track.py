@@ -6,7 +6,7 @@ collect_good_bad_track.py - Terminal-based training data collection
 Standalone script to collect labeled vibration samples for ML training.
 Works independently of the web UI.
 
-Usage:
+Usage:                  
     python scripts/collect_good_bad_track.py
 
 Labels:

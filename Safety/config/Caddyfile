@@ -1,0 +1,16 @@
+{
+    admin localhost:2020
+}
+
+:8080 {
+    # Load balance API requests between two backend servers
+    reverse_proxy /api/* 127.0.0.1:8001 127.0.0.1:8002 {
+        lb_policy round_robin
+        health_uri /api/latest
+        health_interval 5s
+        health_timeout 2s
+    }
+
+    # Serve frontend from API server 1 only (to avoid duplicate static serving)
+    reverse_proxy /* 127.0.0.1:8001
+}

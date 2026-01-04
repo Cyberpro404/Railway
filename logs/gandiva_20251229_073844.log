@@ -1,0 +1,2 @@
+2025-12-29 07:39:04 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2025-12-29 07:39:29 - core.sensor_reader - ERROR - [sensor_reader.py:652] - Sensor read error: Sensor reader not initialized

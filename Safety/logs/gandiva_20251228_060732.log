@@ -1,0 +1,12 @@
+2025-12-28 06:07:35 - core.sensor_reader - INFO - [sensor_reader.py:173] - Modbus instrument initialized on COM5 (slave 1)
+2025-12-28 06:07:35 - core.sensor_reader - INFO - [sensor_reader.py:132] - Sensor reader initialized with frequency 3200.0 Hz
+2025-12-28 06:07:35 - core.sensor_reader - ERROR - [sensor_reader.py:176] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2025-12-28 06:07:35 - core.sensor_reader - ERROR - [sensor_reader.py:134] - Failed to initialize sensor reader: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2025-12-28 06:07:35 - core.sensor_reader - ERROR - [sensor_reader.py:593] - Failed to initialize reader: Initialization failed: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2025-12-28 06:07:38 - core.sensor_reader - ERROR - [sensor_reader.py:323] - Failed to read register block 43501: No communication with the instrument (no answer)
+2025-12-28 06:07:38 - core.sensor_reader - WARNING - [sensor_reader.py:405] - Extended bands not supported by this sensor: Register block read failed: No communication with the instrument (no answer)
+2025-12-28 06:08:44 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2025-12-28 06:08:44 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-28 06:08:52 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2025-12-28 06:09:11 - api.dataset_api - INFO - [dataset_api.py:402] - Captured training sample: normal -> gandiva_captured_20251228.csv
+2025-12-28 06:09:19 - api.dataset_api - INFO - [dataset_api.py:402] - Captured training sample: normal -> gandiva_captured_20251228.csv
