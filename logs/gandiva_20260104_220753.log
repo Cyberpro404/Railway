@@ -1,0 +1,9 @@
+2026-01-04 22:08:14 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-04 22:08:39 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-04 22:08:44 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-04 22:08:49 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-04 22:08:52 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'
+2026-01-04 22:08:54 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-04 22:08:59 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-04 22:09:04 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-04 22:09:09 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
