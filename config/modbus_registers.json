@@ -1,0 +1,25 @@
+{
+  "safe_registers": {
+    "start": 45201,
+    "count": 17,
+    "description": "Safe register block for sensor data",
+    "mapping": {
+      "0": "Z RMS Velocity (mm/s)",
+      "1": "X RMS Velocity (mm/s)",
+      "2": "Z Peak Velocity (mm/s)",
+      "3": "X Peak Velocity (mm/s)",
+      "4": "Z Acceleration (mm/s²)",
+      "5": "X Acceleration (mm/s²)",
+      "6": "Temperature (°C)",
+      "7-16": "Reserved for future use"
+    },
+    "scaling": {
+      "velocity": "register_value / 65535 * 65.535",
+      "temperature": "register_value / 100"
+    }
+  },
+  "restricted_registers": {
+    "note": "Registers 43501 and others are restricted and should never be accessed"
+  }
+}
+

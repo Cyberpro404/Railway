@@ -1,0 +1,45 @@
+# Default Threshold Configuration
+# Gandiva Pro - Railway Condition Monitoring
+
+scalar_thresholds:
+  z_rms:
+    warn: 2.0  # mm/s
+    alarm: 4.0  # mm/s
+    unit: "mm/s"
+    description: "Z-axis RMS velocity"
+  
+  x_rms:
+    warn: 2.0  # mm/s
+    alarm: 4.0  # mm/s
+    unit: "mm/s"
+    description: "X-axis RMS velocity"
+  
+  temperature:
+    warn: 50.0  # °C
+    alarm: 70.0  # °C
+    unit: "°C"
+    description: "Bearing temperature"
+
+band_thresholds:
+  - axis: "Z"
+    band: 1
+    rms_warn: 0.5  # mm/s
+    rms_alarm: 1.0  # mm/s
+    description: "Z-axis Band 1 frequency threshold"
+  
+  - axis: "X"
+    band: 1
+    rms_warn: 0.5  # mm/s
+    rms_alarm: 1.0  # mm/s
+    description: "X-axis Band 1 frequency threshold"
+
+ml_thresholds:
+  anomaly_confidence:
+    warn: 0.3  # 30%
+    alarm: 0.5  # 50%
+    description: "ML prediction confidence threshold for anomaly detection"
+
+iso10816:
+  class: "II"
+  description: "ISO10816 Class II - Medium-sized machines (15-75 kW)"
+
