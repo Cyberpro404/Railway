@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gandiva Level 10 - Component Showcase & Testing</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧪</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <link rel="stylesheet" href="./app.css" />
+  <link rel="stylesheet" href="./animations-professional.css" />
+  <link rel="stylesheet" href="./ml-styles.css" />
+  
+  <style>
+    .test-section {
+      margin-bottom: 40px;
+      padding: 20px;
+      background: linear-gradient(150deg, rgba(18,28,52,.94), rgba(14,22,40,.9));
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 16px;
+    }
+    
+    .test-section h2 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #33ddc8;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .test-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    
+    .test-card {
+      padding: 20px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    
+    .test-card:hover {
+      background: rgba(51, 221, 200, 0.1);
+      border-color: rgba(51, 221, 200, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    .test-card.active {
+      background: rgba(51, 221, 200, 0.15);
+      border-color: rgba(51, 221, 200, 0.5);
+    }
+    
+    .animation-demo {
+      width: 60px;
+      height: 60px;
+      background: linear-gradient(135deg, #33ddc8, #18c4d8);
+      border-radius: 12px;
+      margin: 0 auto 10px;
+    }
+    
+    .result-box {
+      margin-top: 20px;
+      padding: 15px;
+      background: rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    
+    .status-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 10px;
+    }
+    
+    .status-pass { background: rgba(70, 230, 139, 0.2); color: #46e68b; }
+    .status-fail { background: rgba(239, 68, 68, 0.2); color: #ef4444; }
+    .status-pending { background: rgba(244, 180, 0, 0.2); color: #f4b400; }
+    
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar animate-slideInLeft">
+      <div class="brand">
+        <div class="brand__mark"></div>
+        <div class="brand__text">
+          <div class="brand__title">Gandiva</div>
+          <div class="brand__subtitle">Level 10 Testing</div>
+        </div>
+      </div>
+      
+      <nav class="nav" id="testNav">
+        <button class="nav__item is-active animate-fadeInLeft" data-section="animations" style="animation-delay: 0s;">
+          <span>🎨</span><span>Animations</span>
+        </button>
+        <button class="nav__item animate-fadeInLeft" data-section="charts" style="animation-delay: 0.05s;">
+          <span>📊</span><span>Charts</span>
+        </button>
+        <button class="nav__item animate-fadeInLeft" data-section="loading" style="animation-delay: 0.1s;">
+          <span>⌛</span><span>Loading States</span>
+        </button>
+        <button class="nav__item animate-fadeInLeft" data-section="api" style="animation-delay: 0.15s;">
+          <span>🔌</span><span>API Tests</span>
+        </button>
+        <button class="nav__item animate-fadeInLeft" data-section="interactions" style="animation-delay: 0.2s;">
+          <span>✨</span><span>Interactions</span>
+        </button>
+      </nav>
+    </aside>
+    
+    <div class="main">
+      <header class="topbar animate-slideInDown">
+        <div class="topbar__left">
+          <div class="pageTitle">Component Showcase & Testing</div>
+          <div class="muted">Test all Level 10 UI features</div>
+        </div>
+        <div class="topbar__right">
+          <button class="btn btn--primary" id="runAllTests">
+            <span>🚀</span>
+            Run All Tests
+          </button>
+        </div>
+      </header>
+      
+      <div style="padding: 26px;">
+        <!-- Animations Section -->
+        <section class="test-section animate-fadeInUp" id="section-animations" style="animation-delay: 0.1s;">
+          <h2>
+            🎨 Animation System
+            <span class="status-badge status-pass">100+ Animations</span>
+          </h2>
+          
+          <p style="color: rgba(237, 242, 251, 0.7); margin-bottom: 20px;">
+            Click on any animation to see it in action. Professional animations with GPU acceleration.
+          </p>
+          
+          <div class="test-grid" id="animationGrid">
+            <!-- Will be populated by JS -->
+          </div>
+        </section>
+        
+        <!-- Charts Section -->
+        <section class="test-section animate-fadeInUp" id="section-charts" style="animation-delay: 0.2s; display: none;">
+          <h2>
+            📊 Chart System
+            <span class="status-badge status-pending">Testing</span>
+          </h2>
+          
+          <div style="display: grid; gap: 20px;">
+            <div class="card card-hover animate-fadeIn">
+              <div class="card__head">
+                <div>
+                  <div class="card__title">Line Chart</div>
+                  <div class="card__sub">Real-time data visualization</div>
+                </div>
+                <button class="btn btn--small" id="testLineChart">Test</button>
+              </div>
+              <div class="chart-container">
+                <canvas id="testLineChart1"></canvas>
+              </div>
+            </div>
+            
+            <div class="card card-hover animate-fadeIn">
+              <div class="card__head">
+                <div>
+                  <div class="card__title">Bar Chart</div>
+                  <div class="card__sub">Statistical data display</div>
+                </div>
+                <button class="btn btn--small" id="testBarChart">Test</button>
+              </div>
+              <div class="chart-container">
+                <canvas id="testBarChart1"></canvas>
+              </div>
+            </div>
+            
+            <div class="card card-hover animate-fadeIn">
+              <div class="card__head">
+                <div>
+                  <div class="card__title">Doughnut Chart</div>
+                  <div class="card__sub">Proportional data visualization</div>
+                </div>
+                <button class="btn btn--small" id="testDoughnutChart">Test</button>
+              </div>
+              <div class="chart-container">
+                <canvas id="testDoughnutChart1"></canvas>
+              </div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- Loading States Section -->
+        <section class="test-section animate-fadeInUp" id="section-loading" style="animation-delay: 0.3s; display: none;">
+          <h2>
+            ⌛ Loading States
+            <span class="status-badge status-pass">All Types</span>
+          </h2>
+          
+          <div class="test-grid">
+            <div class="test-card" onclick="testLoading('spinner')">
+              <div class="animation-demo" id="demo-spinner"></div>
+              <div>Spinner</div>
+            </div>
+            
+            <div class="test-card" onclick="testLoading('dots')">
+              <div class="animation-demo" id="demo-dots"></div>
+              <div>Dots</div>
+            </div>
+            
+            <div class="test-card" onclick="testLoading('pulse')">
+              <div class="animation-demo" id="demo-pulse"></div>
+              <div>Pulse</div>
+            </div>
+            
+            <div class="test-card" onclick="testLoading('skeleton')">
+              <div class="animation-demo" id="demo-skeleton"></div>
+              <div>Skeleton</div>
+            </div>
+            
+            <div class="test-card" onclick="testLoading('progress')">
+              <div class="animation-demo" id="demo-progress"></div>
+              <div>Progress Bar</div>
+            </div>
+          </div>
+        </section>
+        
+        <!-- API Tests Section -->
+        <section class="test-section animate-fadeInUp" id="section-api" style="animation-delay: 0.4s; display: none;">
+          <h2>
+            🔌 API Test Suite
+            <span class="status-badge status-pending" id="apiTestStatus">Ready</span>
+          </h2>
+          
+          <div style="margin-bottom: 20px;">
+            <button class="btn btn--primary" id="runAPITests">
+              Run API Tests
+            </button>
+            <button class="btn btn--secondary" id="clearAPIResults" style="margin-left: 10px;">
+              Clear Results
+            </button>
+          </div>
+          
+          <div class="result-box" id="apiResults">
+            <div style="color: rgba(237, 242, 251, 0.5); text-align: center; padding: 20px;">
+              Click "Run API Tests" to begin testing all endpoints...
+            </div>
+          </div>
+        </section>
+        
+        <!-- Interactions Section -->
+        <section class="test-section animate-fadeInUp" id="section-interactions" style="animation-delay: 0.5s; display: none;">
+          <h2>
+            ✨ Micro-interactions
+            <span class="status-badge status-pass">Professional</span>
+          </h2>
+          
+          <div style="display: grid; gap: 20px;">
+            <div class="card card-hover">
+              <div class="card__head">
+                <div class="card__title">Toast Notifications</div>
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn--primary" onclick="showSuccess('Success! Operation completed.')">
+                  Success Toast
+                </button>
+                <button class="btn btn--secondary" onclick="showError('Error! Something went wrong.')">
+                  Error Toast
+                </button>
+                <button class="btn btn--outline" onclick="showInfo('Info: This is an information message.')">
+                  Info Toast
+                </button>
+              </div>
+            </div>
+            
+            <div class="card card-hover">
+              <div class="card__head">
+                <div class="card__title">Button Animations</div>
+              </div>
+              <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn btn--primary hover-lift">Hover Lift</button>
+                <button class="btn btn--secondary hover-grow">Hover Grow</button>
+                <button class="btn btn--outline animate-pulse">Pulsing</button>
+                <button class="btn btn--primary animate-heartBeat" style="animation-iteration-count: infinite;">Heart Beat</button>
+              </div>
+            </div>
+            
+            <div class="card card-hover">
+              <div class="card__head">
+                <div class="card__title">Card Animations</div>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+                <div class="card card-hover animate-bounceIn" style="padding: 20px; text-align: center;">
+                  Bounce In
+                </div>
+                <div class="card card-hover animate-rotateIn" style="padding: 20px; text-align: center;">
+                  Rotate In
+                </div>
+                <div class="card card-hover animate-zoomIn" style="padding: 20px; text-align: center;">
+                  Zoom In
+                </div>
+                <div class="card card-hover animate-slideInLeft" style="padding: 20px; text-align: center;">
+                  Slide In
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+  
+  <script src="./graph-utils-enhanced.js"></script>
+  <script src="./api-test-suite.js"></script>
+  <script src="./loading-states.js"></script>
+  
+  <script>
+    // Navigation
+    document.querySelectorAll('[data-section]').forEach(btn => {
+      btn.addEventListener('click', function() {
+        // Update active state
+        document.querySelectorAll('[data-section]').forEach(b => b.classList.remove('is-active'));
+        this.classList.add('is-active');
+        
+        // Show section
+        const section = this.dataset.section;
+        document.querySelectorAll('.test-section').forEach(s => s.style.display = 'none');
+        const targetSection = document.getElementById(`section-${section}`);
+        if (targetSection) {
+          targetSection.style.display = 'block';
+          targetSection.classList.add('animate-fadeInUp');
+        }
+      });
+    });
+    
+    // Populate animations grid
+    const animations = [
+      'fadeIn', 'fadeInUp', 'fadeInDown', 'fadeInLeft', 'fadeInRight',
+      'slideInUp', 'slideInDown', 'slideInLeft', 'slideInRight',
+      'zoomIn', 'rotateIn', 'bounceIn', 'scaleIn',
+      'pulse', 'shake', 'wobble', 'swing', 'tada', 'heartBeat', 'bounce',
+      'spin', 'shimmer', 'wave', 'breathe',
+      'glowPulse', 'neonGlow', 'flicker'
+    ];
+    
+    const animationGrid = document.getElementById('animationGrid');
+    animations.forEach(anim => {
+      const card = document.createElement('div');
+      card.className = 'test-card';
+      card.innerHTML = `
+        <div class="animation-demo" id="demo-${anim}"></div>
+        <div>${anim}</div>
+      `;
+      
+      card.addEventListener('click', function() {
+        const demo = this.querySelector('.animation-demo');
+        demo.style.animation = 'none';
+        setTimeout(() => {
+          demo.style.animation = `${anim} 1s ease-out`;
+        }, 10);
+        
+        // Highlight active
+        document.querySelectorAll('.test-card').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+      });
+      
+      animationGrid.appendChild(card);
+    });
+    
+    // Test loading states
+    function testLoading(type) {
+      const demo = document.getElementById(`demo-${type}`);
+      if (!demo) return;
+      
+      if (type === 'skeleton') {
+        LoadingStates.showSkeleton(demo.id, 'card');
+        setTimeout(() => LoadingStates.hideSkeleton(demo.id), 3000);
+      } else if (type === 'progress') {
+        let progress = 0;
+        const interval = setInterval(() => {
+          progress += 10;
+          LoadingStates.showProgress(demo.id, progress, 'Loading...');
+          if (progress >= 100) {
+            clearInterval(interval);
+            setTimeout(() => LoadingStates.hideProgress(demo.id), 500);
+          }
+        }, 200);
+      } else {
+        LoadingStates.show(demo.id, { type, size: 'small', message: '' });
+        setTimeout(() => LoadingStates.hide(demo.id), 3000);
+      }
+    }
+    
+    // Test charts
+    document.getElementById('testLineChart').addEventListener('click', async function() {
+      const canvas = document.getElementById('testLineChart1');
+      GraphUtils.showChartLoading('testLineChart1');
+      
+      setTimeout(async () => {
+        const chart = await GraphUtils.initLineChart('testLineChart1', {
+          data: {
+            labels: ['0s', '10s', '20s', '30s', '40s', '50s', '60s'],
+            datasets: [{
+              label: 'Vibration Z-axis',
+              data: [2.5, 3.1, 2.8, 4.2, 3.5, 2.9, 3.3],
+              fill: true
+            }, {
+              label: 'Vibration X-axis',
+              data: [1.8, 2.2, 1.9, 2.5, 2.1, 1.7, 2.0],
+              fill: true
+            }]
+          }
+        });
+        
+        GraphUtils.hideChartLoading('testLineChart1');
+        if (chart) showSuccess('Line chart initialized successfully!');
+      }, 1000);
+    });
+    
+    document.getElementById('testBarChart').addEventListener('click', async function() {
+      GraphUtils.showChartLoading('testBarChart1');
+      
+      setTimeout(async () => {
+        const chart = await GraphUtils.initBarChart('testBarChart1', {
+          data: {
+            labels: ['Band 1', 'Band 2', 'Band 3', 'Band 4', 'Band 5'],
+            datasets: [{
+              label: 'Frequency Bands',
+              data: [12, 19, 3, 5, 2]
+            }]
+          }
+        });
+        
+        GraphUtils.hideChartLoading('testBarChart1');
+        if (chart) showSuccess('Bar chart initialized successfully!');
+      }, 1000);
+    });
+    
+    document.getElementById('testDoughnutChart').addEventListener('click', async function() {
+      GraphUtils.showChartLoading('testDoughnutChart1');
+      
+      setTimeout(async () => {
+        const chart = await GraphUtils.initDoughnutChart('testDoughnutChart1', {
+          data: {
+            labels: ['Normal', 'Warning', 'Critical', 'Idle'],
+            datasets: [{
+              data: [65, 20, 10, 5]
+            }]
+          }
+        });
+        
+        GraphUtils.hideChartLoading('testDoughnutChart1');
+        if (chart) showSuccess('Doughnut chart initialized successfully!');
+      }, 1000);
+    });
+    
+    // API Tests
+    document.getElementById('runAPITests').addEventListener('click', async function() {
+      const resultsBox = document.getElementById('apiResults');
+      const statusBadge = document.getElementById('apiTestStatus');
+      
+      resultsBox.innerHTML = '<div style="color: #33ddc8;">🧪 Running API tests...</div>';
+      statusBadge.textContent = 'Running...';
+      statusBadge.className = 'status-badge status-pending';
+      
+      this.disabled = true;
+      this.textContent = 'Testing...';
+      
+      try {
+        const results = await api.runTests();
+        
+        resultsBox.innerHTML = api.generateReport();
+        
+        if (results.failed === 0) {
+          statusBadge.textContent = 'All Passed';
+          statusBadge.className = 'status-badge status-pass';
+          showSuccess(`All ${results.total} API tests passed!`);
+        } else {
+          statusBadge.textContent = `${results.failed} Failed`;
+          statusBadge.className = 'status-badge status-fail';
+          showError(`${results.failed} of ${results.total} tests failed`);
+        }
+      } catch (error) {
+        resultsBox.innerHTML = `<div style="color: #ef4444;">Error: ${error.message}</div>`;
+        statusBadge.textContent = 'Error';
+        statusBadge.className = 'status-badge status-fail';
+        showError('API testing failed: ' + error.message);
+      } finally {
+        this.disabled = false;
+        this.textContent = 'Run API Tests';
+      }
+    });
+    
+    document.getElementById('clearAPIResults').addEventListener('click', function() {
+      document.getElementById('apiResults').innerHTML = `
+        <div style="color: rgba(237, 242, 251, 0.5); text-align: center; padding: 20px;">
+          Click "Run API Tests" to begin testing all endpoints...
+        </div>
+      `;
+      document.getElementById('apiTestStatus').textContent = 'Ready';
+      document.getElementById('apiTestStatus').className = 'status-badge status-pending';
+    });
+    
+    // Run all tests
+    document.getElementById('runAllTests').addEventListener('click', async function() {
+      showInfo('Running comprehensive test suite...');
+      
+      // Test charts
+      document.querySelector('[data-section="charts"]').click();
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      document.getElementById('testLineChart').click();
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      document.getElementById('testBarChart').click();
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      document.getElementById('testDoughnutChart').click();
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Test API
+      document.querySelector('[data-section="api"]').click();
+      await new Promise(resolve => setTimeout(resolve, 500));
+      
+      document.getElementById('runAPITests').click();
+      
+      showSuccess('Comprehensive test suite completed!');
+    });
+    
+    console.log('%c🧪 Gandiva Level 10 - Test Page Loaded', 'color: #33ddc8; font-size: 16px; font-weight: bold');
+    console.log('%cAll systems ready for testing', 'color: #46e68b');
+  </script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+2026-01-07 19:56:04 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-07 19:56:05 - core.sensor_reader - INFO - [sensor_reader.py:266] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-07 19:56:05 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-07 19:56:09 - core.sensor_reader - ERROR - [sensor_reader.py:451] - Failed to read register block 43501: No communication with the instrument (no answer)
+2026-01-07 19:56:09 - core.sensor_reader - WARNING - [sensor_reader.py:533] - Extended bands not supported by this sensor: Register block read failed: No communication with the instrument (no answer)
+2026-01-07 19:56:36 - core.sensor_reader - INFO - [sensor_reader.py:266] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-07 19:56:36 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-07 19:56:37 - core.sensor_reader - INFO - [sensor_reader.py:266] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-07 19:56:37 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-07 19:56:38 - core.sensor_reader - ERROR - [sensor_reader.py:408] - Failed to read scalar values: Failed to read register 42404 after 3 attempts: WriteFile failed (OSError(9, 'The handle is invalid.', None, 6))
+2026-01-07 19:56:38 - core.sensor_reader - INFO - [sensor_reader.py:266] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-07 19:56:38 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz

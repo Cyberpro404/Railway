@@ -16,30 +16,41 @@ HARDWARE TROUBLESHOOTING CHECKLIST (verify these if getting "no answer"):
     [ ] RS-485 termination resistor if long cable
     [ ] Correct A/B wiring (some devices swap)
 
-REGISTER MAP (1-based direct addresses, per QM30VT2 manual):
-    40043:     Temperature        16-bit signed, scale 0.01 °C
-    42403:     Z-axis RMS         16-bit unsigned, scale 0.001 mm/s
-    42404:     Z-axis Peak        16-bit unsigned, scale 0.001 mm/s
-    42453:     X-axis RMS         16-bit unsigned, scale 0.001 mm/s
-    42454:     X-axis Peak        16-bit unsigned, scale 0.001 mm/s
-    42406:     Z-axis RMS         16-bit unsigned, scale 0.001 g (if supported)
-    42456:     X-axis RMS         16-bit unsigned, scale 0.001 g (if supported)
-    42410:     Z-axis HF RMS      16-bit unsigned, scale 0.001 g (if supported)
-    42460:     X-axis HF RMS      16-bit unsigned, scale 0.001 g (if supported)
-    42409:     Z-axis Kurtosis    16-bit unsigned, scale 0.001 (if supported)
-    42459:     X-axis Kurtosis    16-bit unsigned, scale 0.001 (if supported)
-    42408:     Z-axis CrestFactor 16-bit unsigned, scale 0.001 (if supported)
-    42458:     X-axis CrestFactor 16-bit unsigned, scale 0.001 (if supported)
+⚠️ CORRECTED REGISTER MAP - QM30VT2 ALIASED ADDRESSES (45201-45217)
+    EMERGENCY FIX APPLIED - SINGLE BLOCK READ with CORRECT SCALING
+    
+    SCALING FORMULA: value / 65535 * 65.535 (for ALL registers except temperature)
+    
+    PRIMARY DATA BLOCK (45201-45217): Read as SINGLE BLOCK of 17 registers
+        45201[0]:  Z RMS Velocity     Scale: / 65535 * 65.535 = mm/s
+        45202[1]:  Z RMS Velocity     Scale: / 65535 * 65.535 = mm/s (duplicate)
+        45203[2]:  Temperature        Scale: / 100 = °F
+        45204[3]:  Temperature        Scale: / 100 = °C
+        45205[4]:  X RMS Velocity     Scale: / 65535 * 65.535 = in/s
+        45206[5]:  X RMS Velocity     Scale: / 65535 * 65.535 = mm/s
+        45207[6]:  Z Peak Accel       Scale: / 65535 * 65.535 = G
+        45208[7]:  X Peak Accel       Scale: / 65535 * 65.535 = G
+        45211[10]: Z RMS Accel        Scale: / 65535 * 65.535 = G
+        45212[11]: X RMS Accel        Scale: / 65535 * 65.535 = G
+        45213[12]: Z Kurtosis         Scale: / 65535 * 65.535
+        45214[13]: X Kurtosis         Scale: / 65535 * 65.535
+        45215[14]: Z Crest Factor     Scale: / 65535 * 65.535
+        45216[15]: X Crest Factor     Scale: / 65535 * 65.535
+    
+    SYSTEM CONFIG REGISTERS:
+        46101:     Baud Rate          (0=9600, 1=19200, 2=38400)
+        46102:     Parity             (0=None, 1=Odd, 2=Even)
+        46103:     Slave ID           (1-247)
+        42601:     Rotational Speed   RPM
+        42602:     Rotational Speed   Hz
 
-EXTENDED BAND REGISTERS (if supported by sensor):
-    43501+:    Z-axis band block (20 bands × 5 floats × 2 regs = 200 registers)
-    43701+:    X-axis band block (20 bands × 5 floats × 2 regs = 200 registers)
+LEGACY REGISTERS (⚠️ DISABLED - Not configured):
+    43501-43700:   Spectral bands (DISABLED - require FFT pre-configuration)
+    40004-40013:   Simple bands (DISABLED - deprecated)
+    
+⚠️ DO NOT POLL 43501+ registers unless FFT bands are pre-configured in sensor firmware!
 
-SIMPLE BAND REGISTERS (fallback if extended not supported):
-    40004-40013: band_1x through band_7x as 32-bit floats (5 bands × 2 regs)
-
-NOTE: If your sensor doesn't support extended bands (43501+), the code will
-            automatically fall back to simple bands or skip bands entirely.
+NOTE: Using aliased addresses (45xxx) is more reliable than legacy addresses.
 ===============================================================================
 """
 
@@ -198,8 +209,9 @@ class _BandBlockLayout:
         return self.bands * self.registers_per_band
 
 
-_DEFAULT_Z_BANDS = _BandBlockLayout(start_direct=43501)
-_DEFAULT_X_BANDS = _BandBlockLayout(start_direct=43701)
+# DISABLED - Spectral bands not configured (43501-43700 require FFT pre-configuration)
+# _DEFAULT_Z_BANDS = _BandBlockLayout(start_direct=43501)
+# _DEFAULT_X_BANDS = _BandBlockLayout(start_direct=43701)
 
 
 class SensorReader:
@@ -248,10 +260,13 @@ class SensorReader:
                 close_port_after_each_call=False
             )
             instrument.mode = minimalmodbus.MODE_RTU
-            instrument.serial.baudrate = config.baudrate
+            instrument.serial.baudrate = config.baudrate  # Default: 19200
             instrument.serial.bytesize = config.bytesize
             instrument.serial.stopbits = config.stopbits
-            instrument.serial.timeout = config.timeout_s
+            # CRITICAL MODBUS SETTINGS - QM30VT2 optimized
+            # INCREASED TIMEOUT to fix checksum errors - sensor needs more time
+            instrument.serial.timeout = 2.5  # Increased from 1.5 to 2.5 for reliability
+            instrument.clear_buffers_before_each_transaction = True
             
             # Configure parity
             if config.parity == "N":
@@ -359,53 +374,80 @@ class SensorReader:
     
     def read_scalar_values(self) -> dict:
         """
-        Read scalar sensor values from QM30VT2 registers.
+        ⚠️ EMERGENCY FIX APPLIED - CORRECT QM30VT2 REGISTER MAPPING
+        
+        Read scalar sensor values using SINGLE BLOCK READ: 45201-45217 (17 registers)
+        
+        CORRECTED SCALING FORMULA: value / 65535 * 65.535 (for ALL registers)
+        
+        Register Map:
+        45201[0]: Z RMS Velocity (mm/s)
+        45202[1]: Z RMS Velocity duplicate (mm/s) 
+        45203[2]: Temperature (°F)
+        45204[3]: Temperature (°C)
+        45205[4]: X RMS Velocity (in/s)
+        45206[5]: X RMS Velocity (mm/s)
+        45207[6]: Z Peak Accel (G)
+        45208[7]: X Peak Accel (G)
+        45211[10]: Z RMS Accel (G)
+        45212[11]: X RMS Accel (G)
+        45213[12]: Z Kurtosis
+        45214[13]: X Kurtosis
+        45215[14]: Z Crest Factor
+        45216[15]: X Crest Factor
+        
         Returns:
-            Dictionary of scalar measurements (all values scaled per manual)
+            Dictionary of scalar measurements
         Raises:
             SensorReaderError: If read fails
         """
         try:
+            # ✅ EMERGENCY FIX: SINGLE BLOCK READ - 17 registers starting at 45201
+            # Convert aliased address 45201 to 0-based: 45201 - 40001 = 5200
+            register_address = 45201 - _DIRECT_HOLDING_BASE  # 5200
+            raw_data = self._instrument.read_registers(
+                registeraddress=register_address,
+                number_of_registers=17,  # Read full block (45201-45217)
+                functioncode=3
+            )
+            
+            # ✅ CORRECTED SCALING: value / 65535 * 65.535 for ALL registers (except temperature)
             scalars = {
-                # Temperature: 40043, 16-bit signed, scale 0.01 °C
-                "temp_c": float(self._read_register(40043, decimals=2, signed=True)),
-                # Z-axis RMS: 42403, 16-bit unsigned, scale 0.001 mm/s
-                "z_rms_mm_s": float(self._read_register(42403, decimals=3, signed=False)),
-                # X-axis RMS: 42453, 16-bit unsigned, scale 0.001 mm/s
-                "x_rms_mm_s": float(self._read_register(42453, decimals=3, signed=False)),
-                # Z-axis Peak: 42404, 16-bit unsigned, scale 0.001 mm/s
-                "z_peak_mm_s": float(self._read_register(42404, decimals=3, signed=False)),
-                # X-axis Peak: 42454, 16-bit unsigned, scale 0.001 mm/s
-                "x_peak_mm_s": float(self._read_register(42454, decimals=3, signed=False)),
-                # Z-axis RMS (g): 42406, 16-bit unsigned, scale 0.001 g (if supported)
-                "z_rms_g": float(self._read_register(42406, decimals=3, signed=False)),
-                # X-axis RMS (g): 42456, 16-bit unsigned, scale 0.001 g (if supported)
-                "x_rms_g": float(self._read_register(42456, decimals=3, signed=False)),
-                # Z-axis HF RMS (g): 42410, 16-bit unsigned, scale 0.001 g (if supported)
-                "z_hf_rms_g": float(self._read_register(42410, decimals=3, signed=False)),
-                # X-axis HF RMS (g): 42460, 16-bit unsigned, scale 0.001 g (if supported)
-                "x_hf_rms_g": float(self._read_register(42460, decimals=3, signed=False)),
-                # Z-axis Kurtosis: 42409, 16-bit unsigned, scale 0.001 (if supported)
-                "z_kurtosis": float(self._read_register(42409, decimals=3, signed=False)),
-                # X-axis Kurtosis: 42459, 16-bit unsigned, scale 0.001 (if supported)
-                "x_kurtosis": float(self._read_register(42459, decimals=3, signed=False)),
-                # Z-axis Crest Factor: 42408, 16-bit unsigned, scale 0.001 (if supported)
-                "z_crest_factor": float(self._read_register(42408, decimals=3, signed=False)),
-                # X-axis Crest Factor: 42458, 16-bit unsigned, scale 0.001 (if supported)
-                "x_crest_factor": float(self._read_register(42458, decimals=3, signed=False)),
-                # Frequency (not from sensor, for record)
+                # Core vibration metrics
+                "z_rms_mm_s": float(raw_data[0]) / 65535.0 * 65.535,      # 45201[0]
+                "z_rms_mm_s_2": float(raw_data[1]) / 65535.0 * 65.535,    # 45202[1]
+                "temp_f": float(raw_data[2]) / 100.0,                     # 45203[2] - divide by 100
+                "temp_c": float(raw_data[3]) / 100.0,                     # 45204[3] - divide by 100
+                "x_rms_in_s": float(raw_data[4]) / 65535.0 * 65.535,      # 45205[4]
+                "x_rms_mm_s": float(raw_data[5]) / 65535.0 * 65.535,      # 45206[5]
+                
+                # Peak acceleration
+                "z_peak_g": float(raw_data[6]) / 65535.0 * 65.535,        # 45207[6]
+                "x_peak_g": float(raw_data[7]) / 65535.0 * 65.535,        # 45208[7]
+                
+                # RMS acceleration (indices 10, 11 in 17-register block)
+                "z_rms_g": float(raw_data[10]) / 65535.0 * 65.535,        # 45211[10]
+                "x_rms_g": float(raw_data[11]) / 65535.0 * 65.535,        # 45212[11]
+                
+                # Statistical features
+                "z_kurtosis": float(raw_data[12]) / 65535.0 * 65.535,     # 45213[12]
+                "x_kurtosis": float(raw_data[13]) / 65535.0 * 65.535,     # 45214[13]
+                "z_crest": float(raw_data[14]) / 65535.0 * 65.535,        # 45215[14]
+                "x_crest": float(raw_data[15]) / 65535.0 * 65.535,        # 45216[15]
+                
+                # Frequency (from configuration, not sensor)
                 "frequency_hz": self._frequency_hz,
             }
 
-            # Optional RPM read (40204): 16-bit unsigned, scale 1 RPM; tolerate absence
-            try:
-                scalars["rpm"] = float(self._read_register(40204, decimals=0, signed=False))
-            except Exception as rpm_err:
-                logger.debug(f"RPM register not available/failed: {rpm_err}")
+            logger.debug(f"✅ SAFE READ SUCCESS: Z_RMS={scalars['z_rms_mm_s']:.4f} mm/s, "
+                        f"Temp={scalars['temp_c']:.1f}°C, X_RMS={scalars['x_rms_mm_s']:.4f} mm/s")
 
             return scalars
+            
         except Exception as e:
-            logger.error(f"Failed to read scalar values: {e}")
+            logger.error(f"❌ REGISTER READ FAILED: {e}")
+            logger.error(f"   Check: Baudrate={self._instrument.serial.baudrate}, "
+                        f"SlaveID={self._instrument.address}, Port={self._instrument.serial.port}")
             raise
     
     @staticmethod
@@ -493,47 +535,18 @@ class SensorReader:
         """
         Read frequency band values for both axes.
         
-        Uses global flag to skip extended bands if they've already failed once.
-        This prevents log spam from repeated "no answer" errors.
+        DISABLED: Spectral band registers (43501+) require FFT pre-configuration
+        in Banner's software. Since these are not configured, always return None
+        to avoid communication errors.
+        
+        To enable: Configure frequency bands in Banner software, then uncomment
+        the code below and update _extended_bands_supported = True.
         
         Returns:
-            Tuple of (z_bands, x_bands). Returns (None, None) if read fails.
+            Tuple of (None, None) - bands disabled
         """
-        global _extended_bands_supported, _extended_bands_check_done
-        
-        # Skip extended bands if we've already determined they're not supported
-        if _extended_bands_check_done and not _extended_bands_supported:
-            return None, None
-        
-        try:
-            word_swap = False
-            regs_z = self._read_register_block(
-                _DEFAULT_Z_BANDS.start_direct,
-                _DEFAULT_Z_BANDS.total_registers
-            )
-            bands_z = self._parse_band_block(regs_z, axis="z", layout=_DEFAULT_Z_BANDS, word_swap=word_swap)
-            
-            # If we got here, extended bands ARE supported
-            _extended_bands_supported = True
-            _extended_bands_check_done = True
-            
-            try:
-                regs_x = self._read_register_block(
-                    _DEFAULT_X_BANDS.start_direct,
-                    _DEFAULT_X_BANDS.total_registers
-                )
-                bands_x = self._parse_band_block(regs_x, axis="x", layout=_DEFAULT_X_BANDS, word_swap=word_swap)
-            except SensorReaderError:
-                bands_x = None
-            
-            return bands_z, bands_x
-        except Exception as e:
-            # Mark extended bands as NOT supported - only log ONCE
-            if not _extended_bands_check_done:
-                logger.warning(f"Extended bands not supported by this sensor: {e}")
-                _extended_bands_supported = False
-                _extended_bands_check_done = True
-            return None, None
+        # Spectral bands are not configured - skip entirely
+        return None, None
     
     def read_simple_bands(self) -> Optional[Dict[str, float]]:
         """
@@ -599,13 +612,37 @@ class SensorReader:
                     }
             
             # Read scalar values (RMS, peak, temperature)
-            try:
-                scalars = self.read_scalar_values()
-            except Exception as e:
-                self._health.record_failure(f"Scalar read failed: {e}")
+            # Read scalar values (RMS, peak, temperature)
+            # Retry up to 3 times for checksum errors
+            max_attempts = 3
+            scalars = None
+            last_error = None
+            
+            for attempt in range(max_attempts):
+                try:
+                    scalars = self.read_scalar_values()
+                    # Small delay to let sensor settle - helps with checksum reliability
+                    time.sleep(0.05)  # 50ms delay
+                    break  # Success, exit retry loop
+                except Exception as e:
+                    last_error = e
+                    error_msg = str(e).lower()
+                    is_checksum_error = any(keyword in error_msg for keyword in 
+                                           ['checksum', 'crc', 'check failed'])
+                    
+                    if is_checksum_error and attempt < max_attempts - 1:
+                        logger.warning(f"Checksum error on attempt {attempt + 1}/{max_attempts}, retrying...")
+                        time.sleep(0.1)  # Wait 100ms before retry
+                        continue
+                    else:
+                        # Final attempt or non-checksum error
+                        break
+            
+            if scalars is None:
+                self._health.record_failure(f"Scalar read failed: {last_error}")
                 return SensorStatus.ERROR, {
                     "ok": False,
-                    "error": f"Failed to read scalar values: {e}",
+                    "error": f"Failed to read scalar values: {last_error}",
                     "timestamp": timestamp
                 }
             

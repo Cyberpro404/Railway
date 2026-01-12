@@ -1,0 +1,29 @@
+2026-01-10 14:55:33 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-10 14:56:33 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-10 14:56:33 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-10 14:56:33 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: Checksum error in rtu mode: b'\xe5\xf1' instead of b'\xe5E' . The response is: b'\x01\x03"\x000\x03z \xd2\x0bJ\x00@\x00\xa3\x00\x1c\x00\x17\x00a\x00a\x00\t\x00\x07\x0c\xdd\x0b\x8e\x0f\xa9\x0e\xf5\x00D\xe5\xf1' (plain response: b'\x01\x03"\x000\x03z \xd2\x0bJ\x00@\x00\xa3\x00\x1c\x00\x17\x00a\x00a\x00\t\x00\x07\x0c\xdd\x0b\x8e\x0f\xa9\x0e\xf5\x00D\xe5\xf1')
+2026-01-10 14:56:33 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5
+2026-01-10 14:57:59 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-10 14:57:59 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-10 14:58:39 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: No communication with the instrument (no answer)
+2026-01-10 14:58:39 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5
+2026-01-10 14:58:47 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: Checksum error in rtu mode: b'\xeb\xfe' instead of b'\xcbn' . The response is: b'\x01\x03"\x00"\x00V \xea\x0bW\x00<\x00\x98\x00\x16\x00\x18\x01\xe8\x00\xdb\x00\x05\x00\x06\x0b\xfe\x0b\xe5\xe8=\x02\x02\x04\xe2\xeb\xfe' (plain response: b'\x01\x03"\x00"\x00V \xea\x0bW\x00<\x00\x98\x00\x16\x00\x18\x01\xe8\x00\xdb\x00\x05\x00\x06\x0b\xfe\x0b\xe5\xe8=\x02\x02\x04\xe2\xeb\xfe')
+2026-01-10 14:58:47 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5
+2026-01-10 14:58:54 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-10 14:58:54 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-10 14:58:55 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-10 14:58:55 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-10 14:58:55 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-10 14:58:55 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-10 14:59:00 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: No communication with the instrument (no answer)
+2026-01-10 14:59:00 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5
+2026-01-10 14:59:02 - core.sensor_reader - WARNING - [sensor_reader.py:601] - Connection test failed, attempting reconnect: Failed to read register 40043 after 2 attempts: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-10 14:59:02 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-10 14:59:02 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-10 14:59:02 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-10 14:59:02 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: Checksum error in rtu mode: b'\x00\x03' instead of b'G\x7f' . The response is: b'\x01\x03"\x001\x00~ \xf4\x0b\\\x000\x00z\x00\x15\x00\x11\xa0\xac@z\x80A\x80\x83\x0bd\x0b\x81\r\xfd\x0e\x8d\x00F\x00\x03' (plain response: b'\x01\x03"\x001\x00~ \xf4\x0b\\\x000\x00z\x00\x15\x00\x11\xa0\xac@z\x80A\x80\x83\x0bd\x0b\x81\r\xfd\x0e\x8d\x00F\x00\x03')
+2026-01-10 14:59:02 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5
+2026-01-10 14:59:14 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: Checksum error in rtu mode: b'\xdcG' instead of b'_\xe5' . The response is: b'\x01\x03"\x00.\x00v \xfd\x0bb\x001\x00~\x00\x17\x00\x16\x00z\x07\xe8\x00\x05\x00\x06\x0b\xc2\x0c\x0f\x0f3\x0e\\\x00B\xdcG' (plain response: b'\x01\x03"\x00.\x00v \xfd\x0bb\x001\x00~\x00\x17\x00\x16\x00z\x07\xe8\x00\x05\x00\x06\x0b\xc2\x0c\x0f\x0f3\x0e\\\x00B\xdcG')
+2026-01-10 14:59:14 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5
+2026-01-10 14:59:46 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: Checksum error in rtu mode: b'\x9a\x8e' instead of b'\x9a\x8a' . The response is: b'\x01\x03"\x001\x00} \xfd\x0bb\x00>\x00\x9e\x00\x19\x00\x17\x00a\x00a\x00\x06\x00\x06\x0b\xc5\x0bs\x10-\x0ex\x00F\x9a\x8e' (plain response: b'\x01\x03"\x001\x00} \xfd\x0bb\x00>\x00\x9e\x00\x19\x00\x17\x00a\x00a\x00\x06\x00\x06\x0b\xc5\x0bs\x10-\x0ex\x00F\x9a\x8e')
+2026-01-10 14:59:46 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5

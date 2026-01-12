@@ -977,6 +977,7 @@ body::before{
 .btn--danger:hover{background:rgba(239,68,68,.3)}
 
 .spin{animation:spin 1s linear infinite}
+.spinning{animation:spin 1s linear infinite}
 @keyframes spin{from{transform:rotate(0deg)} to{transform:rotate(360deg)}}
 
 /* ===========================================================

@@ -1,0 +1,5 @@
+2026-01-07 23:58:05 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-07 23:58:06 - core.sensor_reader - INFO - [sensor_reader.py:269] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-07 23:58:06 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-07 23:58:10 - core.sensor_reader - ERROR - [sensor_reader.py:479] - Failed to read register block 43501: No communication with the instrument (no answer)
+2026-01-07 23:58:10 - core.sensor_reader - INFO - [sensor_reader.py:563] - Extended bands not available (register 43501+): Register block read failed: No communication with the instrument (no answer)

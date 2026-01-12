@@ -7,6 +7,7 @@ import os
 import pandas as pd
 from datetime import datetime
 from typing import Dict, List, Optional
+import time
 from fastapi import HTTPException
 from pydantic import BaseModel
 
@@ -278,63 +279,61 @@ def setup_dataset_routes(app):
     @app.get("/api/ml/realtime-stats", tags=["ML"])
     def api_get_ml_realtime_stats() -> Dict:
         """
-        Get real-time ML prediction statistics.
-        Returns recent predictions, confidence distribution, and class distribution.
+        Get real-time ML prediction statistics for the ML Insights tab.
+        Uses the operational history store to keep the frontend charts in sync.
         """
         try:
             from database.operational_db import get_db
-            
-            db = get_db()
-            
-            # Get recent readings with ML predictions
-            recent = db.get_recent_readings(limit=100)
-            
-            stats = {
-                "total_predictions": 0,
-                "class_distribution": {},
-                "confidence_distribution": {
-                    "high": 0,    # > 80%
-                    "medium": 0,  # 50-80%
-                    "low": 0      # < 50%
-                },
-                "avg_confidence": 0,
-                "recent_predictions": []
+            try:
+                source = get_db().get_history(seconds=3600)
+            except Exception:
+                source = []
+
+            recent_predictions: list[dict] = []
+            for row in reversed(list(source)):
+                pred = row.get("ml_prediction")
+                if not pred:
+                    continue
+                recent_predictions.append({
+                    "timestamp": row.get("timestamp"),
+                    "label": pred.get("label"),
+                    "confidence": float(pred.get("confidence", 0.0) or 0.0),
+                    "z_rms": float(row.get("z_rms_mm_s", 0.0) or 0.0),
+                    "x_rms": float(row.get("x_rms_mm_s", 0.0) or 0.0),
+                    "temp": float(row.get("temp_c", 0.0) or 0.0),
+                })
+                if len(recent_predictions) >= 50:
+                    break
+
+            class_distribution: dict[str, int] = {"normal": 0, "expansion_gap": 0, "crack": 0}
+            confidence_distribution: dict[str, int] = {"high": 0, "medium": 0, "low": 0}
+
+            total_conf = 0.0
+            for p in recent_predictions:
+                conf = float(p.get("confidence", 0.0) or 0.0)
+                total_conf += conf
+
+                label_key = str(p.get("label") or "").lower()
+                class_distribution[label_key] = class_distribution.get(label_key, 0) + 1
+
+                if conf >= 0.8:
+                    confidence_distribution["high"] += 1
+                elif conf >= 0.5:
+                    confidence_distribution["medium"] += 1
+                else:
+                    confidence_distribution["low"] += 1
+
+            average_confidence = total_conf / len(recent_predictions) if recent_predictions else 0.0
+
+            payload = {
+                "class_distribution": class_distribution,
+                "confidence_distribution": confidence_distribution,
+                "average_confidence": average_confidence,
+                "recent_predictions": recent_predictions,
+                "total_predictions": len(recent_predictions),
             }
-            
-            confidences = []
-            
-            for reading in recent:
-                ml_pred = reading.get('ml_prediction')
-                if ml_pred and isinstance(ml_pred, dict):
-                    stats["total_predictions"] += 1
-                    
-                    label = ml_pred.get('label', 'unknown')
-                    stats["class_distribution"][label] = stats["class_distribution"].get(label, 0) + 1
-                    
-                    confidence = ml_pred.get('confidence', 0)
-                    confidences.append(confidence)
-                    
-                    if confidence > 0.8:
-                        stats["confidence_distribution"]["high"] += 1
-                    elif confidence > 0.5:
-                        stats["confidence_distribution"]["medium"] += 1
-                    else:
-                        stats["confidence_distribution"]["low"] += 1
-                    
-                    # Add to recent predictions (last 10)
-                    if len(stats["recent_predictions"]) < 10:
-                        stats["recent_predictions"].append({
-                            "timestamp": reading.get('timestamp'),
-                            "label": label,
-                            "confidence": confidence,
-                            "z_rms": reading.get('z_rms_mm_s'),
-                            "x_rms": reading.get('x_rms_mm_s')
-                        })
-            
-            if confidences:
-                stats["avg_confidence"] = sum(confidences) / len(confidences)
-            
-            return {"status": "ok", "data": stats}
+
+            return {"status": "ok", "data": payload, **payload}
         except Exception as e:
             logger.error(f"Error getting ML realtime stats: {e}")
             raise HTTPException(status_code=500, detail=f"Failed to get stats: {str(e)}")
@@ -410,3 +409,117 @@ def setup_dataset_routes(app):
         except Exception as e:
             logger.error(f"Error capturing training sample: {e}")
             raise HTTPException(status_code=500, detail=f"Failed to capture sample: {str(e)}")
+
+    class CaptureBatchRequest(BaseModel):
+        """Request model for capturing multiple training samples from live sensor readings."""
+        count: int
+        label: str
+        notes: Optional[str] = None
+        interval_ms: Optional[int] = 500
+
+    @app.post("/api/training/capture-batch", tags=["Training"])
+    def api_capture_training_batch(request: CaptureBatchRequest) -> Dict:
+        """
+        Capture multiple training samples by reading the latest sensor values repeatedly.
+        Samples are appended to a daily CSV file under the data directory.
+        """
+        try:
+            # Validate count
+            if request.count <= 0:
+                raise HTTPException(status_code=400, detail="Count must be a positive integer")
+            if request.count > 1000:
+                raise HTTPException(status_code=400, detail="Count too large; max allowed is 1000")
+
+            # Daily dataset filename
+            today = datetime.now().strftime("%Y%m%d")
+            filename = f"gandiva_captured_{today}.csv"
+            filepath = os.path.join(DATA_DIR, filename)
+
+            # Ensure we can read latest sensor data
+            try:
+                from database.operational_db import get_db
+                db = get_db()
+            except Exception as e:
+                raise HTTPException(status_code=500, detail=f"Operational DB unavailable: {e}")
+
+            rows: List[Dict] = []
+            for i in range(request.count):
+                latest = db.get_latest()
+                if not latest or latest == {}:
+                    # If no data yet, wait a bit and retry
+                    time.sleep((request.interval_ms or 500) / 1000.0)
+                    continue
+
+                reading = latest.get('reading') if isinstance(latest, dict) and 'reading' in latest else latest
+                if not isinstance(reading, dict):
+                    time.sleep((request.interval_ms or 500) / 1000.0)
+                    continue
+
+                # Build sample row
+                ts = datetime.now().isoformat()
+                z_rms = reading.get('z_rms_mm_s') or reading.get('z_rms') or 0.0
+                x_rms = reading.get('x_rms_mm_s') or reading.get('x_rms') or 0.0
+                temp = reading.get('temperature_c') or reading.get('temp_c') or 0.0
+                z_peak = reading.get('z_peak_mm_s') or reading.get('z_peak') or 0.0
+                x_peak = reading.get('x_peak_mm_s') or reading.get('x_peak') or 0.0
+
+                row: Dict = {
+                    "timestamp": ts,
+                    "z_rms": float(z_rms or 0.0),
+                    "x_rms": float(x_rms or 0.0),
+                    "temperature": float(temp or 0.0),
+                    "z_peak": float(z_peak or 0.0),
+                    "x_peak": float(x_peak or 0.0),
+                    "label": request.label,
+                    "notes": request.notes or "",
+                }
+
+                # Include band energy if available
+                z_be = reading.get('z_band_energy') or {}
+                x_be = reading.get('x_band_energy') or {}
+                if isinstance(z_be, dict):
+                    for band, value in z_be.items():
+                        row[f"z_band_{band}"] = value
+                if isinstance(x_be, dict):
+                    for band, value in x_be.items():
+                        row[f"x_band_{band}"] = value
+
+                rows.append(row)
+
+                # Sleep between captures except after last
+                if i < request.count - 1:
+                    time.sleep((request.interval_ms or 500) / 1000.0)
+
+            if not rows:
+                raise HTTPException(status_code=404, detail="No sensor data captured. Ensure the sensor is connected.")
+
+            # Append to CSV
+            df_new = pd.DataFrame(rows)
+            if os.path.exists(filepath):
+                try:
+                    df_existing = pd.read_csv(filepath)
+                    df_combined = pd.concat([df_existing, df_new], ignore_index=True)
+                    df_combined.to_csv(filepath, index=False)
+                    row_count = len(df_combined)
+                except Exception:
+                    # If existing file corrupted, write new
+                    df_new.to_csv(filepath, index=False)
+                    row_count = len(df_new)
+            else:
+                df_new.to_csv(filepath, index=False)
+                row_count = len(df_new)
+
+            logger.info(f"Captured {len(rows)} samples (batch) -> {filename}")
+
+            return {
+                "status": "ok",
+                "message": f"Captured {len(rows)} samples with label '{request.label}'",
+                "filename": filename,
+                "captured": len(rows),
+                "total_samples": row_count,
+            }
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Error capturing training batch: {e}")
+            raise HTTPException(status_code=500, detail=f"Failed to capture batch: {str(e)}")

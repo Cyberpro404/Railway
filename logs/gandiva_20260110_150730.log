@@ -1,0 +1,11 @@
+2026-01-10 15:07:33 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-10 15:08:33 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-10 15:08:33 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-10 15:09:23 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-10 15:09:23 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-10 15:09:26 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: No communication with the instrument (no answer)
+2026-01-10 15:09:26 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5
+2026-01-10 15:09:27 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-10 15:09:27 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-10 15:09:48 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: Checksum error in rtu mode: b'\x82\xba' instead of b'C|' . The response is: b'\x01\x03"\x003\x00Z!\x16\x0bo\x00=\x00\x9c\x00\x16\x00\x15\x00\xaa\x00z\x00\x05\x00\x05\x0c\x10\x0bZ\x0e!\r\xf6\x002\x82\xba' (plain response: b'\x01\x03"\x003\x00Z!\x16\x0bo\x00=\x00\x9c\x00\x16\x00\x15\x00\xaa\x00z\x00\x05\x00\x05\x0c\x10\x0bZ\x0e!\r\xf6\x002\x82\xba')
+2026-01-10 15:09:48 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5

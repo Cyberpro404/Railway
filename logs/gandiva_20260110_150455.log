@@ -1,0 +1,3 @@
+2026-01-10 15:04:55 - core.sensor_reader - ERROR - [sensor_reader.py:283] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-10 15:04:55 - core.sensor_reader - ERROR - [sensor_reader.py:239] - Failed to initialize sensor reader: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-10 15:04:55 - core.sensor_reader - ERROR - [sensor_reader.py:739] - Failed to initialize reader: Initialization failed: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)

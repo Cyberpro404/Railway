@@ -1,0 +1,2 @@
+2026-01-06 22:50:59 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-06 22:50:59 - api.dataset_api - ERROR - [dataset_api.py:339] - Error getting ML realtime stats: 'OperationalDatabase' object has no attribute 'get_recent_readings'

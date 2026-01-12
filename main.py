@@ -15,6 +15,7 @@ from fastapi import FastAPI, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
 
 import logging
 
@@ -29,6 +30,7 @@ from core import sensor_reader
 from api import prediction_api
 from api.dataset_api import setup_dataset_routes
 from database.operational_db import get_db, init_db
+from utils import auto_detect
 
 try:
     import winsound  # type: ignore
@@ -41,21 +43,14 @@ except Exception:  # pragma: no cover
     list_ports = None
 
 
+# Create FastAPI app early (before any route decorators)
+# The lifespan will be attached later after it's defined
 app = FastAPI(title="Gandiva Rail Safety Monitor")
 
-# Include ML prediction router
-app.include_router(prediction_api.router)
-
-# Setup dataset management routes
-setup_dataset_routes(app)
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Placeholder - these will be called after app is created
+# app.include_router(prediction_api.router)
+# setup_dataset_routes(app)
+# app.add_middleware(...)
 
 
 HISTORY_MAXLEN = 3600
@@ -318,9 +313,8 @@ def _infer_fault_label(reading: dict, data_quality: dict) -> str:
 async def _poll_sensor_loop() -> None:
     global _latest, _sensor_status, _sensor_error_message, _sensor_error_count
     loop = asyncio.get_running_loop()
-    # Sensor polling interval (seconds). Lower values give faster ML updates
-    # but increase Modbus traffic and CPU usage.
-    interval_s = 5.0
+    # Polling interval: 1 second for reliable real-time monitoring
+    interval_s = 1.0
     next_tick = loop.time()
     while True:
         try:
@@ -464,15 +458,15 @@ async def _poll_sensor_loop() -> None:
         await asyncio.sleep(sleep_s)
 
 
-@app.on_event("startup")
-async def _startup() -> None:
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     print("[STARTUP] Gandiva backend starting...")
-    
+
     # Load ML model for prediction endpoint
     print("[STARTUP] Loading ML model...")
     model_loaded = prediction_api.load_model()
     print(f"[STARTUP] ML model loaded: {model_loaded}")
-    
+
     # Initialize operational database
     try:
         init_db()
@@ -480,55 +474,117 @@ async def _startup() -> None:
     except Exception as e:
         logger.warning(f"Failed to init database: {e}")
         print(f"[STARTUP] Database initialization failed: {e}")
-    # Auto-initialize sensor reader: scan ports and connect to first available
-    print("[STARTUP] Attempting auto sensor connection...")
-    global _poll_task
-    async def auto_connect_sensor():
-        from models import ConnectionConfig
-        import time
-        max_attempts = 5
-        attempt = 0
-        while attempt < max_attempts:
-            try:
-                if list_ports is None:
-                    print("[STARTUP] Serial port scanning not available.")
-                    break
-                ports = list(list_ports.comports())
-                if not ports:
-                    print("[STARTUP] No serial ports found. Retrying in 5s...")
-                    await asyncio.sleep(5)
-                    attempt += 1
-                    continue
-                port = ports[0].device
-                print(f"[STARTUP] Auto-connecting to {port}")
+
+    # Smart auto-connect: use auto_detect module for intelligent sensor discovery
+    print("[STARTUP] Starting smart auto-detection of sensor...")
+    global _poll_task, _connection
+
+    async def smart_auto_connect():
+        """Smart auto-connect using auto_detect module."""
+        try:
+            # First try quick detection (common settings)
+            print("[STARTUP] Trying quick auto-detection...")
+            result = await asyncio.to_thread(auto_detect.quick_detect_sensor)
+            
+            if not result:
+                # Try detailed detection
+                print("[STARTUP] Quick detection failed, trying detailed scan...")
+                result = await asyncio.to_thread(auto_detect.detailed_detect_sensor)
+            
+            if result:
+                print(f"[STARTUP] SUCCESS - Sensor found on {result['port']} (Slave ID: {result['slave_id']}, Baud: {result['baudrate']})")
+                
+                # Create connection config
                 cfg = ConnectionConfig(
-                    port=port,
-                    baudrate=19200,
+                    port=result["port"],
+                    baudrate=result["baudrate"],
                     bytesize=8,
-                    parity="N",
+                    parity=result.get("parity", "N"),
                     stopbits=1,
                     timeout_s=3.0,
-                    slave_id=1
+                    slave_id=result["slave_id"]
                 )
-                from core import sensor_reader
+                
+                # Initialize sensor
                 sensor_reader.init_reader(cfg)
+                
+                global _connection
+                _connection = cfg
+                
                 # Try a test read
                 try:
                     sample = sensor_reader.read_scalar_values()
-                    print(f"[STARTUP] Sensor connected and read OK: {sample}")
+                    print(f"[STARTUP] Sensor test read successful")
                 except Exception as e:
-                    print(f"[STARTUP] Sensor connected but read failed: {e}")
-                global _connection
-                _connection = cfg
-                break
-            except Exception as e:
-                print(f"[STARTUP] Auto sensor connect failed: {e}. Retrying in 5s...")
-                await asyncio.sleep(5)
-                attempt += 1
-    await auto_connect_sensor()
+                    print(f"[STARTUP] Sensor connected but test read failed: {e}")
+                
+                return True
+            else:
+                print("[STARTUP] No sensor detected - waiting for manual connection")
+                return False
+                
+        except Exception as e:
+            print(f"[STARTUP] Auto-detection error: {e}")
+            return False
+
+    await smart_auto_connect()
+    
     if _poll_task is None or _poll_task.done():
         _poll_task = asyncio.create_task(_poll_sensor_loop())
     print("[STARTUP] Backend ready!")
+    print(f"[STARTUP] Poll task created: {_poll_task}")
+
+    try:
+        yield
+    except Exception as e:
+        print(f"[LIFESPAN ERROR] Exception in lifespan: {e}")
+        import traceback
+        traceback.print_exc()
+        raise
+    finally:
+        # Gracefully stop polling task on shutdown
+        print("[SHUTDOWN] Starting shutdown sequence...")
+        if _poll_task:
+            print(f"[SHUTDOWN] Poll task status: done={_poll_task.done()}, cancelled={_poll_task.cancelled()}")
+            if _poll_task.done() and not _poll_task.cancelled():
+                try:
+                    exc = _poll_task.exception()
+                    if exc:
+                        print(f"[SHUTDOWN] Poll task had exception: {exc}")
+                        import traceback
+                        traceback.print_exception(type(exc), exc, exc.__traceback__)
+                except Exception:
+                    pass
+        try:
+            if _poll_task and not _poll_task.done():
+                _poll_task.cancel()
+                try:
+                    await _poll_task
+                except asyncio.CancelledError:
+                    pass  # Expected on shutdown
+                except Exception as e:
+                    print(f"[SHUTDOWN] Poll task error: {e}")
+        except Exception as e:
+            print(f"[SHUTDOWN] Error during shutdown: {e}")
+        print("[SHUTDOWN] Backend stopped.")
+
+# Attach lifespan handler to the app
+app.router.lifespan_context = lifespan
+
+# Include ML prediction router
+app.include_router(prediction_api.router)
+
+# Setup dataset management routes
+setup_dataset_routes(app)
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.get("/api/latest", response_model=None)
@@ -944,6 +1000,111 @@ def api_test_beep(_: _EmptyBody | None = None) -> dict:
     if winsound is not None:
         winsound.Beep(1200, 150)
     return {"status": "ok"}
+
+
+# =============================================================================
+# AUTO-DETECTION ENDPOINTS
+# =============================================================================
+
+@app.post("/api/auto-detect")
+def api_auto_detect(quick: bool = False) -> dict:
+    """
+    Automatically detect connected sensor and return connection parameters.
+    
+    Args:
+        quick: If True, use quick detection (common settings only)
+        
+    Returns:
+        {
+            "success": true/false,
+            "connection": {port, slave_id, baudrate, parity} or null,
+            "message": "status message"
+        }
+    """
+    try:
+        logger.info(f"Starting auto-detection (quick={quick})...")
+        
+        if quick:
+            result = auto_detect.quick_detect_sensor()
+        else:
+            result = auto_detect.detailed_detect_sensor()
+        
+        if result:
+            return {
+                "success": True,
+                "connection": result,
+                "message": f"Sensor detected on {result['port']} (Slave ID: {result['slave_id']}, Baud: {result['baudrate']})"
+            }
+        else:
+            return {
+                "success": False,
+                "connection": None,
+                "message": "No sensor detected. Please check connections and try manual configuration."
+            }
+    except Exception as e:
+        logger.error(f"Auto-detection error: {e}")
+        return {
+            "success": False,
+            "connection": None,
+            "message": f"Auto-detection failed: {str(e)}"
+        }
+
+
+@app.post("/api/auto-connect")
+def api_auto_connect(quick: bool = True) -> dict:
+    """
+    Auto-detect sensor and immediately connect to it.
+    
+    Args:
+        quick: If True, use quick detection
+        
+    Returns:
+        Status dictionary
+    """
+    try:
+        # Detect sensor
+        result = auto_detect.quick_detect_sensor() if quick else auto_detect.detailed_detect_sensor()
+        
+        if not result:
+            return {
+                "success": False,
+                "message": "No sensor detected"
+            }
+        
+        # Create connection config
+        cfg = ConnectionConfig(
+            port=result["port"],
+            baudrate=result["baudrate"],
+            bytesize=8,
+            parity=result["parity"],
+            stopbits=1,
+            timeout_s=3.0,
+            slave_id=result["slave_id"]
+        )
+        
+        # Initialize sensor
+        sensor_reader.init_reader(cfg)
+        
+        # Test read
+        sample = sensor_reader.read_scalar_values()
+        
+        # Update global connection
+        global _connection
+        _connection = cfg
+        
+        return {
+            "success": True,
+            "message": f"Connected to sensor on {result['port']}",
+            "connection": result,
+            "sample": sample.get("ok", False)
+        }
+        
+    except Exception as e:
+        logger.error(f"Auto-connect error: {e}")
+        return {
+            "success": False,
+            "message": f"Auto-connect failed: {str(e)}"
+        }
 
 
 # =============================================================================

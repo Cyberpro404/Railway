@@ -1,0 +1,17 @@
+2026-01-08 00:12:51 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-08 00:12:51 - core.sensor_reader - INFO - [sensor_reader.py:269] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-08 00:12:51 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-08 00:12:59 - core.sensor_reader - INFO - [sensor_reader.py:269] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-08 00:12:59 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-08 00:14:17 - core.sensor_reader - INFO - [sensor_reader.py:269] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-08 00:14:17 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-08 00:14:18 - core.sensor_reader - INFO - [sensor_reader.py:269] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-08 00:14:18 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-08 00:14:18 - core.sensor_reader - INFO - [sensor_reader.py:269] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-08 00:14:18 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-08 00:14:19 - core.sensor_reader - INFO - [sensor_reader.py:269] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-08 00:14:19 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-08 00:14:22 - core.sensor_reader - WARNING - [sensor_reader.py:580] - Connection test failed, attempting reconnect: Failed to read register 40043 after 2 attempts: WriteFile failed (OSError(9, 'The handle is invalid.', None, 6))
+2026-01-08 00:14:22 - core.sensor_reader - ERROR - [sensor_reader.py:272] - Failed to initialize Modbus instrument on COM5: Cannot configure port, something went wrong. Original message: OSError(9, 'The handle is invalid.', None, 6)
+2026-01-08 00:14:22 - core.sensor_reader - INFO - [sensor_reader.py:269] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-08 00:14:22 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz

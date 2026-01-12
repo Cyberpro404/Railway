@@ -1,0 +1,65 @@
+2026-01-07 23:40:16 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-07 23:40:16 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:17 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:18 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:19 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:20 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:21 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:22 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:23 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:24 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:25 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:26 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:27 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:28 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:29 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:30 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:31 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:32 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:33 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:34 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:35 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:36 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:37 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:38 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:38 - core.sensor_reader - ERROR - [sensor_reader.py:269] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:38 - core.sensor_reader - ERROR - [sensor_reader.py:227] - Failed to initialize sensor reader: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:38 - core.sensor_reader - ERROR - [sensor_reader.py:752] - Failed to initialize reader: Initialization failed: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:39 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:40 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:41 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:42 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:42 - core.sensor_reader - ERROR - [sensor_reader.py:269] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:42 - core.sensor_reader - ERROR - [sensor_reader.py:227] - Failed to initialize sensor reader: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:42 - core.sensor_reader - ERROR - [sensor_reader.py:752] - Failed to initialize reader: Initialization failed: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:43 - core.sensor_reader - ERROR - [sensor_reader.py:269] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:43 - core.sensor_reader - ERROR - [sensor_reader.py:227] - Failed to initialize sensor reader: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:43 - core.sensor_reader - ERROR - [sensor_reader.py:752] - Failed to initialize reader: Initialization failed: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:43 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:44 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:45 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:46 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:47 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:48 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:49 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:50 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:51 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:52 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:53 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:54 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:55 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:56 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:57 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:58 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:40:59 - core.sensor_reader - ERROR - [sensor_reader.py:269] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:59 - core.sensor_reader - ERROR - [sensor_reader.py:227] - Failed to initialize sensor reader: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:59 - core.sensor_reader - ERROR - [sensor_reader.py:752] - Failed to initialize reader: Initialization failed: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:40:59 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:41:00 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:41:00 - core.sensor_reader - ERROR - [sensor_reader.py:269] - Failed to initialize Modbus instrument on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:41:00 - core.sensor_reader - ERROR - [sensor_reader.py:227] - Failed to initialize sensor reader: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:41:00 - core.sensor_reader - ERROR - [sensor_reader.py:752] - Failed to initialize reader: Initialization failed: Modbus init failed on COM5: could not open port 'COM5': PermissionError(13, 'Access is denied.', None, 5)
+2026-01-07 23:41:01 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:41:02 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:41:03 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized
+2026-01-07 23:41:04 - core.sensor_reader - ERROR - [sensor_reader.py:786] - Sensor read error: Sensor reader not initialized

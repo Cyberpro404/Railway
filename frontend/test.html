@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test</title>
+</head>
+<body>
+    <h1>Server is working!</h1>
+    <p>If you see this, the server is serving HTML correctly.</p>
+    <p>Check browser console for JavaScript errors with F12</p>
+    <script>
+        console.log("Test script loaded");
+        console.log("Current URL:", window.location.href);
+        console.log("Attempting to fetch /api/latest...");
+        fetch('/api/latest').then(r => r.json()).then(d => console.log("API works!", d)).catch(e => console.error("API error:", e));
+    </script>
+</body>
+</html>

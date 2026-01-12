@@ -1,0 +1,5 @@
+2026-01-08 01:22:13 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-08 01:22:13 - core.sensor_reader - INFO - [sensor_reader.py:280] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-08 01:22:13 - core.sensor_reader - INFO - [sensor_reader.py:237] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-08 01:22:36 - core.sensor_reader - ERROR - [sensor_reader.py:447] - ❌ REGISTER READ FAILED: Checksum error in rtu mode: b'*n' instead of b'+\xb2' . The response is: b'\x01\x03"\x004\x00\x85";\x0c\x1e\x00\x1b\x00F\x00\x17\x00\x16\x00z\x00\xc3\x00\x05\x00\x04\x0b\xd0\x0b\x9b\x0fX\x0e\xb9\x00J*n' (plain response: b'\x01\x03"\x004\x00\x85";\x0c\x1e\x00\x1b\x00F\x00\x17\x00\x16\x00z\x00\xc3\x00\x05\x00\x04\x0b\xd0\x0b\x9b\x0fX\x0e\xb9\x00J*n')
+2026-01-08 01:22:36 - core.sensor_reader - ERROR - [sensor_reader.py:448] -    Check: Baudrate=19200, SlaveID=1, Port=COM5

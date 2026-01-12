@@ -1,0 +1,6 @@
+2026-01-08 00:10:16 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-08 00:10:16 - core.sensor_reader - INFO - [sensor_reader.py:269] - Modbus instrument initialized on COM5 (slave 1)
+2026-01-08 00:10:16 - core.sensor_reader - INFO - [sensor_reader.py:225] - Sensor reader initialized with frequency 3200.0 Hz
+2026-01-08 00:10:20 - core.sensor_reader - ERROR - [sensor_reader.py:471] - Failed to read register block 43501: No communication with the instrument (no answer)
+2026-01-08 00:10:20 - core.sensor_reader - INFO - [sensor_reader.py:555] - Extended bands not available (register 43501+): Register block read failed: No communication with the instrument (no answer)
+2026-01-08 00:10:21 - core.sensor_reader - ERROR - [sensor_reader.py:428] - Failed to read scalar values from aliased registers: Checksum error in rtu mode: b'\x94O' instead of b'\xe5\x88' . The response is: b'\x01\x03v\x00-\x00t"\xf7\x94O' (plain response: b'\x01\x03v\x00-\x00t"\xf7\x94O')

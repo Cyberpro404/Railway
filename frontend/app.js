@@ -584,6 +584,16 @@ function setActiveTab(name){
 
   if (latest){
     if (name === 'overview'){
+      // Initialize charts if not already done
+      if (!chartsInitialized) {
+        initCharts();
+      }
+      // Trigger resize for charts
+      setTimeout(() => {
+        if (chartRms) chartRms.resize();
+        if (chartTemp) chartTemp.resize();
+        if (chartBand) chartBand.resize();
+      }, 50);
       updateKpis();
       renderParamGrid();
       renderBandList();
@@ -606,12 +616,18 @@ function setActiveTab(name){
     if (name === 'system'){
       renderSystemInfo();
     }
-    if (name === 'mlinsights'){
-      refreshMLInsights();
+  }
+
+  // ML Insights and Datasets should refresh even if we do not yet have a sensor reading
+  if (name === 'mlinsights'){
+    // Initialize ML charts if not already done
+    if (!qs('chartMlDistribution')?.chart) {
+      initMLInsightsCharts();
     }
-    if (name === 'datasets'){
-      refreshDatasets();
-    }
+    refreshMLInsights();
+  }
+  if (name === 'datasets'){
+    refreshDatasets();
   }
 }
 
@@ -1757,51 +1773,218 @@ function setupHelpModal(){
 }
 
 let chartRms, chartTemp, chartBand;
+let chartsInitialized = false;
+
 function initCharts(){
-  const base = {
+  // Defer if tab is not visible
+  if (!qs('tab-overview').classList.contains('is-active')) {
+    setTimeout(initCharts, 100);
+    return;
+  }
+  
+  if (chartsInitialized) return;
+  chartsInitialized = true;
+  
+  // Level 10 Premium Chart Configuration
+  const premiumBase = {
     responsive: true,
     maintainAspectRatio: false,
-    animation: { duration: 0 },
-    plugins: { legend: { labels: { color: 'rgba(232,237,247,.8)' } } },
+    animation: { duration: 300, easing: 'easeOutQuart' },
+    interaction: {
+      mode: 'index',
+      intersect: false,
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top',
+        labels: {
+          color: 'rgba(232,237,247,.9)',
+          font: { size: 13, weight: '600', family: 'Inter, sans-serif' },
+          padding: 20,
+          usePointStyle: true,
+          pointStyle: 'circle'
+        }
+      },
+      tooltip: {
+        enabled: true,
+        backgroundColor: 'rgba(14, 23, 44, 0.95)',
+        titleColor: '#fff',
+        bodyColor: 'rgba(232,237,247,.9)',
+        borderColor: 'rgba(51, 221, 200, 0.3)',
+        borderWidth: 1,
+        cornerRadius: 12,
+        padding: 14,
+        titleFont: { size: 14, weight: '700' },
+        bodyFont: { size: 13 },
+        displayColors: true,
+        boxPadding: 6
+      }
+    },
     scales: {
-      x: { ticks: { color: 'rgba(232,237,247,.55)' }, grid: { color: 'rgba(255,255,255,.06)' } },
-      y: { ticks: { color: 'rgba(232,237,247,.55)' }, grid: { color: 'rgba(255,255,255,.06)' } }
+      x: {
+        ticks: {
+          color: 'rgba(232,237,247,.6)',
+          font: { size: 11 },
+          maxRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 12
+        },
+        grid: {
+          color: 'rgba(255,255,255,.04)',
+          drawBorder: false
+        },
+        border: { display: false }
+      },
+      y: {
+        ticks: {
+          color: 'rgba(232,237,247,.6)',
+          font: { size: 11 },
+          padding: 10
+        },
+        grid: {
+          color: 'rgba(255,255,255,.06)',
+          drawBorder: false
+        },
+        border: { display: false }
+      }
+    },
+    elements: {
+      line: {
+        tension: 0.4,
+        borderWidth: 3,
+        borderCapStyle: 'round',
+        borderJoinStyle: 'round'
+      },
+      point: {
+        radius: 0,
+        hoverRadius: 6,
+        hoverBorderWidth: 3
+      }
     }
   };
 
-  chartRms = new Chart(qs('chartRms'), {
-    type: 'line',
-    data: {
-      labels: history.labels,
-      datasets: [
-        { label: 'Z RMS', data: history.z, borderColor: '#6ea8fe', tension: .25, pointRadius: 0 },
-        { label: 'X RMS', data: history.x, borderColor: '#22c55e', tension: .25, pointRadius: 0 }
-      ]
-    },
-    options: base
-  });
+  // Verify canvas elements exist
+  const rmsCanvas = qs('chartRms');
+  const tempCanvas = qs('chartTemp');
+  const bandCanvas = qs('chartBand');
 
-  chartTemp = new Chart(qs('chartTemp'), {
-    type: 'line',
-    data: {
-      labels: history.labels,
-      datasets: [
-        { label: 'Temp (°C)', data: history.t, borderColor: '#f59e0b', tension: .25, pointRadius: 0 }
-      ]
-    },
-    options: base
-  });
+  if (!rmsCanvas || !tempCanvas || !bandCanvas) {
+    console.warn('Chart canvas elements not found, will retry');
+    chartsInitialized = false;
+    setTimeout(initCharts, 100);
+    return;
+  }
 
-  chartBand = new Chart(qs('chartBand'), {
-    type: 'line',
-    data: {
-      labels: history.labels,
-      datasets: [
-        { label: 'Band total RMS', data: history.band, borderColor: '#a78bfa', tension: .25, pointRadius: 0 }
-      ]
-    },
-    options: base
-  });
+  // Premium RMS Chart - HERO CHART
+  try {
+    chartRms = new Chart(rmsCanvas, {
+      type: 'line',
+      data: {
+        labels: history.labels,
+        datasets: [
+          {
+            label: 'Z-Axis RMS (mm/s)',
+            data: history.z,
+            borderColor: '#3b82f6',
+            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            borderWidth: 3
+          },
+          {
+            label: 'X-Axis RMS (mm/s)',
+            data: history.x,
+            borderColor: '#22c55e',
+            backgroundColor: 'rgba(34, 197, 94, 0.08)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            borderWidth: 3
+          }
+        ]
+      },
+      options: {
+        ...premiumBase,
+        plugins: {
+          ...premiumBase.plugins,
+          title: {
+            display: false
+          }
+        },
+        scales: {
+          ...premiumBase.scales,
+          y: {
+            ...premiumBase.scales.y,
+            title: {
+              display: true,
+              text: 'Velocity (mm/s)',
+              color: 'rgba(232,237,247,.7)',
+              font: { size: 12, weight: '600' }
+            },
+            suggestedMin: 0
+          }
+        }
+      }
+    });
+  } catch (e) {
+    console.error('Failed to initialize RMS chart:', e);
+  }
+
+  // Temperature Chart
+  try {
+    chartTemp = new Chart(tempCanvas, {
+      type: 'line',
+      data: {
+        labels: history.labels,
+        datasets: [
+          {
+            label: 'Temperature (°C)',
+            data: history.t,
+            borderColor: '#f59e0b',
+            backgroundColor: 'rgba(245, 158, 11, 0.1)',
+            fill: true,
+            tension: 0.4,
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            borderWidth: 3
+          }
+        ]
+      },
+      options: premiumBase
+    });
+  } catch (e) {
+    console.error('Failed to initialize Temperature chart:', e);
+  }
+
+  // Band Chart with Premium Styling
+  try {
+    chartBand = new Chart(bandCanvas, {
+      type: 'line',
+      data: {
+        labels: history.labels,
+        datasets: [
+          { 
+            label: 'Band total RMS', 
+            data: history.band, 
+            borderColor: '#a78bfa',
+            backgroundColor: 'rgba(167, 139, 250, 0.1)',
+            fill: true,
+            tension: 0.4, 
+            pointRadius: 0,
+            pointHoverRadius: 6,
+            borderWidth: 3
+          }
+        ]
+      },
+      options: premiumBase
+    });
+  } catch (e) {
+    console.error('Failed to initialize Band chart:', e);
+  }
 }
 
 function pushHistoryPoint(r){
@@ -2183,6 +2366,85 @@ qs('applyConnBtn').addEventListener('click', async () => {
   };
   await connect(cfg);
 });
+
+// Auto-connect button handler
+qs('autoConnectBtn')?.addEventListener('click', async () => {
+  const btn = qs('autoConnectBtn');
+  const statusDiv = qs('autoDetectStatus');
+  const statusText = qs('autoDetectText');
+  
+  if (!btn || !statusDiv || !statusText) return;
+  
+  // Show loading state
+  btn.disabled = true;
+  btn.innerHTML = '<i data-lucide="loader" class="btn__icon spinning"></i>Detecting...';
+  statusDiv.style.display = 'block';
+  statusDiv.style.background = '#dbeafe';
+  statusDiv.style.borderColor = '#3b82f6';
+  statusText.textContent = '🔍 Scanning COM ports and testing connections...';
+  
+  try {
+    // Call auto-connect endpoint with non-blocking approach
+    const result = await Promise.race([
+      apiPost('/api/auto-connect', { quick: true }),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Auto-detection timeout')), 10000))
+    ]).catch(error => {
+      // Gracefully handle timeout and errors
+      return { success: false, message: 'Auto-detection failed or timed out', error };
+    });
+    
+    if (result.success) {
+      // Success!
+      statusDiv.style.background = '#dcfce7';
+      statusDiv.style.borderColor = '#22c55e';
+      statusText.textContent = `✅ ${result.message}`;
+      
+      // Update connection status display
+      if (result.connection) {
+        qs('statusPort').textContent = result.connection.port;
+        qs('statusSlaveId').textContent = result.connection.slave_id;
+        qs('statusBaudrate').textContent = result.connection.baudrate;
+        qs('statusConnection').textContent = 'Connected';
+        qs('statusConnection').style.color = '#22c55e';
+        
+        // Also update manual form fields
+        qs('port').value = result.connection.port;
+        qs('slaveId').value = result.connection.slave_id;
+        qs('baudrate').value = result.connection.baudrate;
+      }
+      
+      // Refresh data
+      await refreshLatest();
+      
+      // Hide status after 5 seconds
+      setTimeout(() => {
+        statusDiv.style.display = 'none';
+      }, 5000);
+    } else {
+      // Failed - but app continues running!
+      statusDiv.style.background = '#fee2e2';
+      statusDiv.style.borderColor = '#ef4444';
+      statusText.textContent = `❌ Auto-detection failed. Use manual connection below.`;
+      
+      // Show manual connection info
+      setTimeout(() => {
+        if (qs('manualConnectionBox')) {
+          qs('manualConnectionBox').classList.add('animate-pulse');
+        }
+      }, 500);
+    }
+  } catch (error) {
+    statusDiv.style.background = '#fee2e2';
+    statusDiv.style.borderColor = '#ef4444';
+    statusText.textContent = `⚠️ Error: ${error.message || 'Auto-detection failed'}. Use manual connection.`;
+  } finally {
+    // Reset button - always re-enable for retry
+    btn.disabled = false;
+    btn.innerHTML = '<i data-lucide="zap" class="btn__icon"></i>Auto Connect';
+    lucide.createIcons(); // Refresh Lucide icons
+  }
+});
+
 
 qs('axisZ').addEventListener('click', () => setOverviewAxis('z'));
 qs('axisX').addEventListener('click', () => setOverviewAxis('x'));
@@ -2681,7 +2943,7 @@ async function reloadMLModel() {
   }
   
   try {
-    await apiPost('/reload_model', {});
+    await apiPost('/ml/reload', {});
     showToast('ML model reloaded successfully', 'success');
     await refreshMLModelInfo();
   } catch (e) {
@@ -2993,6 +3255,7 @@ function closeCaptureModal() {
 async function confirmCaptureSample() {
   const label = qs('captureLabel').value;
   const notes = qs('captureNotes').value || '';
+  const countVal = Number(qs('captureCount')?.value || 1);
   
   if (!latest) {
     showToast('No sensor data available to capture', 'error');
@@ -3006,37 +3269,32 @@ async function confirmCaptureSample() {
   }
   
   try {
-    // Build sample data from current sensor reading
-    const sample = {
-      z_rms: latest.z_rms_mm_s || 0,
-      x_rms: latest.x_rms_mm_s || 0,
-      temperature: latest.temperature_c || 0,
-      z_peak: latest.z_peak_mm_s || 0,
-      x_peak: latest.x_peak_mm_s || 0,
-      label: label,
-      notes: notes,
-      timestamp: new Date().toISOString()
-    };
-    
-    // Add band energy data if available
-    if (latest.z_band_energy) {
-      sample.z_band_energy = latest.z_band_energy;
+    if (countVal > 1) {
+      // Batch capture via backend using live readings
+      const payload = { count: countVal, label, notes };
+      const resp = await apiPost('/api/training/capture-batch', payload);
+      showToast(`Captured ${resp.captured ?? countVal} samples (${label})`, 'success');
+    } else {
+      // Single capture using current sensor snapshot
+      const sample = {
+        z_rms: latest.z_rms_mm_s || 0,
+        x_rms: latest.x_rms_mm_s || 0,
+        temperature: latest.temperature_c || 0,
+        z_peak: latest.z_peak_mm_s || 0,
+        x_peak: latest.x_peak_mm_s || 0,
+        label: label,
+        notes: notes,
+        timestamp: new Date().toISOString()
+      };
+      if (latest.z_band_energy) sample.z_band_energy = latest.z_band_energy;
+      if (latest.x_band_energy) sample.x_band_energy = latest.x_band_energy;
+      await apiPost('/api/training/capture', sample);
+      showToast(`Sample captured (${label})`, 'success');
     }
-    if (latest.x_band_energy) {
-      sample.x_band_energy = latest.x_band_energy;
-    }
-    
-    // Send to API
-    const resp = await apiPost('/api/training/capture', sample);
-    
-    showToast(`Sample captured with label: ${label}`, 'success');
     closeCaptureModal();
-    
-    // Refresh datasets if on that tab
     if (activeTab === 'datasets') {
       await refreshDatasets();
     }
-    
   } catch (e) {
     console.error('Failed to capture sample:', e);
     showToast('Failed to capture sample: ' + (e.message || 'Unknown error'), 'error');

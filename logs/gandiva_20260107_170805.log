@@ -1,0 +1,12 @@
+2026-01-07 17:08:20 - database.operational_db - INFO - [operational_db.py:96] - Operational database initialized successfully
+2026-01-07 17:08:45 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:08:50 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:08:55 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:09:00 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:09:05 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:09:10 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:09:15 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:09:20 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:09:25 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:09:30 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized
+2026-01-07 17:09:35 - core.sensor_reader - ERROR - [sensor_reader.py:761] - Sensor read error: Sensor reader not initialized

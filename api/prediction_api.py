@@ -12,6 +12,7 @@ import numpy as np
 import joblib
 import os
 from typing import List
+from datetime import datetime, timezone
 
 # Model file locations - use absolute path from project root
 _THIS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -106,14 +107,14 @@ def load_model():
     print(f"[ML] File exists: {os.path.exists(MODEL_FILE)}")
     
     if not os.path.exists(MODEL_FILE):
-        print(f"[ML] ⚠️  Model file NOT FOUND at: {MODEL_FILE}")
+        print(f"[ML] WARNING: Model file NOT FOUND at: {MODEL_FILE}")
         print(f"[ML]    Run 'python scripts/train_gap_crack_model.py' to train the model first.")
         _model = None
         return False
     
     try:
         _model = joblib.load(MODEL_FILE)
-        print(f"[ML] ✓ Model loaded successfully from: {MODEL_FILE}")
+        print(f"[ML] SUCCESS: Model loaded successfully from: {MODEL_FILE}")
         print(f"[ML]   Model type: {type(_model).__name__}")
         if hasattr(_model, 'classes_'):
             print(f"[ML]   Classes: {list(_model.classes_)}")
@@ -122,14 +123,14 @@ def load_model():
         print(f"[ML] Looking for scaler at: {SCALER_FILE}")
         if os.path.exists(SCALER_FILE):
             _scaler = joblib.load(SCALER_FILE)
-            print(f"[ML] ✓ Scaler loaded successfully from: {SCALER_FILE}")
+            print(f"[ML] SUCCESS: Scaler loaded successfully from: {SCALER_FILE}")
         else:
             _scaler = None
-            print(f"[ML] ℹ️  No scaler file found - using raw features")
+            print(f"[ML] INFO: No scaler file found - using raw features")
         
         return True
     except Exception as e:
-        print(f"[ML] ❌ Error loading model: {e}")
+        print(f"[ML] ERROR: Error loading model: {e}")
         import traceback
         traceback.print_exc()
         _model = None
@@ -499,3 +500,71 @@ async def predict_batch(samples: List[VibrationSample]):
         ))
     
     return results
+
+# -------------------------------------------------
+# Debug/testing endpoint to simulate an ML reading
+# -------------------------------------------------
+@router.post("/ml/simulate")
+async def simulate_ml_reading():
+    """Simulate a single sensor reading, run ML prediction, and store it.
+
+    Useful for testing the ML Insights tab when hardware isn't responding.
+    """
+    try:
+        # Build a synthetic reading similar to the runtime structure
+        now = datetime.now(timezone.utc).isoformat()
+        reading = {
+            "ok": True,
+            "timestamp": now,
+            # Scalars commonly present in runtime reads
+            "z_rms_mm_s": 1.2,
+            "x_rms_mm_s": 0.9,
+            "z_peak_mm_s": 3.4,
+            "x_peak_mm_s": 2.8,
+            "temp_c": 36.5,
+            # Alternative scalar features used when bands are missing
+            "z_kurtosis": 2.1,
+            "z_crest_factor": 3.0,
+            "z_rms_g": 0.06,
+            "z_hf_rms_g": 0.02,
+            # No band values – let safe_predict_from_reading use alternative features
+            "band_1x": 0.0,
+            "band_2x": 0.0,
+            "band_3x": 0.0,
+            "band_5x": 0.0,
+            "band_7x": 0.0,
+            # Train state for UI
+            "train_state": "idle",
+        }
+
+        # Run ML prediction using the same helper as runtime
+        result = safe_predict_from_reading(reading)
+        if not result.get("ok"):
+            raise HTTPException(status_code=503, detail=result.get("error", "Prediction unavailable"))
+
+        reading["ml_prediction"] = {
+            "label": result["prediction"],
+            "class_index": result["class_index"],
+            "confidence": result["confidence"],
+            "probabilities": result["probabilities"],
+        }
+
+        # Persist to operational DB so Insights can read it
+        try:
+            from database.operational_db import get_db
+            get_db().upsert_latest(reading)
+        except Exception as db_err:
+            # Non-fatal for simulation; return the reading anyway
+            print(f"[ML simulate] DB upsert failed: {db_err}")
+
+        return {
+            "status": "ok",
+            "data": {
+                "timestamp": reading["timestamp"],
+                "prediction": reading["ml_prediction"],
+            }
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Simulation failed: {e}")

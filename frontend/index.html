@@ -8,9 +8,17 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js for graphs -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- Lucide icons -->
   <script src="https://unpkg.com/lucide@latest"></script>
+  
+  <!-- Stylesheets - LEVEL 10 UI -->
   <link rel="stylesheet" href="./app.css" />
+  <link rel="stylesheet" href="./animations-professional.css" />
+  <link rel="stylesheet" href="./ml-styles.css" />
 </head>
 <body>
   <div class="app">
@@ -86,7 +94,30 @@
           <div class="card">
             <div class="card__head">
               <div>
-                <div class="card__title">Auto-detect</div>
+                <div class="card__title">🤖 Auto-detect & Connect</div>
+                <div class="card__sub">Automatically find and connect to vibration sensor</div>
+              </div>
+              <button class="btn btn--primary" id="autoConnectBtn">
+                <i data-lucide="zap" class="btn__icon"></i>Auto Connect
+              </button>
+            </div>
+            <div class="formRow">
+              <div style="padding: 16px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                <strong>✨ Smart Auto-Detection</strong>
+                <p style="margin-top: 8px; font-size: 14px; color: #64748b;">
+                  The system will automatically scan all COM ports and slave IDs to find your sensor. This typically takes 10-30 seconds.
+                </p>
+              </div>
+              <div id="autoDetectStatus" style="display: none; padding: 12px; background: #dcfce7; border-radius: 8px; border-left: 4px solid #22c55e; margin-top: 12px;">
+                <strong id="autoDetectText">✓ Detecting...</strong>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card__head">
+              <div>
+                <div class="card__title">Manual scan ports</div>
                 <div class="card__sub">Scan available COM ports and connect</div>
               </div>
               <button class="btn" id="scanPortsBtn"><i data-lucide="search" class="btn__icon"></i>Search</button>
@@ -113,7 +144,9 @@
               </table>
             </div>
           </div>
-
+        </div>
+        
+        <div class="grid2" style="margin-top: 24px;">
           <div class="card">
             <div class="card__head">
               <div>
@@ -154,6 +187,35 @@
 
             <div class="note">
               Connection uses Modbus RTU 8N1 by default. If you change parity/baud, apply again.
+            </div>
+          </div>
+          
+          <div class="card">
+            <div class="card__head">
+              <div>
+                <div class="card__title">Connection Status</div>
+                <div class="card__sub">Current sensor connection details</div>
+              </div>
+            </div>
+            <div style="padding: 16px;">
+              <div class="paramGrid" id="connectionStatusGrid">
+                <div class="param">
+                  <div class="param__label">Port</div>
+                  <div class="param__value" id="statusPort">—</div>
+                </div>
+                <div class="param">
+                  <div class="param__label">Slave ID</div>
+                  <div class="param__value" id="statusSlaveId">—</div>
+                </div>
+                <div class="param">
+                  <div class="param__label">Baudrate</div>
+                  <div class="param__value" id="statusBaudrate">—</div>
+                </div>
+                <div class="param">
+                  <div class="param__label">Status</div>
+                  <div class="param__value" id="statusConnection">Disconnected</div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -234,14 +296,14 @@
         </div>
 
         <div class="overviewGrid">
-          <div class="card">
+          <div class="card" style="grid-column: 1 / -1;">
             <div class="card__head">
               <div>
-                <div class="card__title">Vibration RMS trend</div>
-                <div class="card__sub">Z/X RMS velocity (mm/s)</div>
+                <div class="card__title">📈 Real-Time Vibration RMS Trend</div>
+                <div class="card__sub">Z/X RMS velocity (mm/s) - Enhanced visualization</div>
               </div>
             </div>
-            <div class="chartBox"><canvas id="chartRms"></canvas></div>
+            <div class="chartBox" style="height: 450px;"><canvas id="chartRms"></canvas></div>
           </div>
 
           <div class="card">
@@ -262,29 +324,6 @@
               </div>
             </div>
             <div class="paramGrid" id="paramGrid"></div>
-          </div>
-
-          <div class="card">
-            <div class="card__head">
-              <div>
-                <div class="card__title">Spectral bands</div>
-                <div class="card__sub">Select a band to inspect</div>
-              </div>
-              <div class="seg">
-                <button class="seg__btn is-active" id="axisZ">Z</button>
-                <button class="seg__btn" id="axisX">X</button>
-              </div>
-            </div>
-
-            <div class="bandLayout">
-              <div class="bandList" id="bandList"></div>
-              <div class="bandDetail">
-                <div class="bandHead" id="bandHead">No band selected</div>
-                <div class="bandName" id="bandName"></div>
-                <div class="bandCards" id="bandCards"></div>
-                <div class="chartBox"><canvas id="chartBand"></canvas></div>
-              </div>
-            </div>
           </div>
         </div>
       </section>
@@ -478,91 +517,61 @@
           </div>
         </div>
 
-        <!-- Stats Grid -->
-        <div class="ml-stats">
-          <div class="ml-stat ml-stat--normal">
-            <div class="ml-stat__ring">
-              <svg viewBox="0 0 36 36">
-                <path class="ml-stat__ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                <path class="ml-stat__ring-fill" id="ringNormal" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              </svg>
-              <div class="ml-stat__icon"><i data-lucide="check-circle"></i></div>
-            </div>
-            <div class="ml-stat__body">
-              <div class="ml-stat__value" id="mlNormalCount">0</div>
-              <div class="ml-stat__label">Normal Track</div>
-              <div class="ml-stat__percent" id="mlNormalPercent">0%</div>
-            </div>
-          </div>
-          <div class="ml-stat ml-stat--gap">
-            <div class="ml-stat__ring">
-              <svg viewBox="0 0 36 36">
-                <path class="ml-stat__ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                <path class="ml-stat__ring-fill" id="ringGap" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              </svg>
-              <div class="ml-stat__icon"><i data-lucide="minus-circle"></i></div>
-            </div>
-            <div class="ml-stat__body">
-              <div class="ml-stat__value" id="mlGapCount">0</div>
-              <div class="ml-stat__label">Expansion Gap</div>
-              <div class="ml-stat__percent" id="mlGapPercent">0%</div>
-            </div>
-          </div>
-          <div class="ml-stat ml-stat--crack">
-            <div class="ml-stat__ring">
-              <svg viewBox="0 0 36 36">
-                <path class="ml-stat__ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                <path class="ml-stat__ring-fill" id="ringCrack" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              </svg>
-              <div class="ml-stat__icon"><i data-lucide="alert-triangle"></i></div>
-            </div>
-            <div class="ml-stat__body">
-              <div class="ml-stat__value" id="mlCrackCount">0</div>
-              <div class="ml-stat__label">Crack Detected</div>
-              <div class="ml-stat__percent" id="mlCrackPercent">0%</div>
-            </div>
-          </div>
-          <div class="ml-stat ml-stat--total">
-            <div class="ml-stat__ring">
-              <svg viewBox="0 0 36 36">
-                <path class="ml-stat__ring-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-                <path class="ml-stat__ring-fill" id="ringTotal" stroke-dasharray="100, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"/>
-              </svg>
-              <div class="ml-stat__icon"><i data-lucide="activity"></i></div>
-            </div>
-            <div class="ml-stat__body">
-              <div class="ml-stat__value" id="mlTotalCount">0</div>
-              <div class="ml-stat__label">Total Predictions</div>
-              <div class="ml-stat__percent" id="mlAvgConfidence">Avg: 0%</div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Charts Row -->
-        <div class="ml-charts">
-          <div class="glass-card">
-            <div class="glass-card__head">
-              <div class="glass-card__title">
-                <i data-lucide="pie-chart"></i>
-                <span>Prediction Distribution</span>
+        <!-- Prediction Statistics Cards -->
+        <div class="overviewGrid" style="margin-bottom: 24px;">
+          <div class="card">
+            <div class="card__head">
+              <div>
+                <div class="card__title">Normal Predictions</div>
+                <div class="card__sub">Healthy condition</div>
               </div>
             </div>
-            <div class="glass-card__body">
-              <div class="chart-container" style="height:260px">
-                <canvas id="chartMlDistribution"></canvas>
+            <div style="padding: 16px; text-align: center;">
+              <div style="font-size: 32px; font-weight: 700; color: #22c55e;" id="mlNormalCount">0</div>
+              <div style="color: rgba(232,237,247,.6); font-size: 12px; margin-top: 4px;">
+                <span id="mlNormalPercent">0%</span> of all predictions
               </div>
             </div>
           </div>
-          <div class="glass-card">
-            <div class="glass-card__head">
-              <div class="glass-card__title">
-                <i data-lucide="bar-chart-3"></i>
-                <span>Confidence Analysis</span>
+          <div class="card">
+            <div class="card__head">
+              <div>
+                <div class="card__title">Expansion Gaps</div>
+                <div class="card__sub">Warning condition</div>
               </div>
             </div>
-            <div class="glass-card__body">
-              <div class="chart-container" style="height:260px">
-                <canvas id="chartMlConfidence"></canvas>
+            <div style="padding: 16px; text-align: center;">
+              <div style="font-size: 32px; font-weight: 700; color: #f59e0b;" id="mlGapCount">0</div>
+              <div style="color: rgba(232,237,247,.6); font-size: 12px; margin-top: 4px;">
+                <span id="mlGapPercent">0%</span> of all predictions
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__head">
+              <div>
+                <div class="card__title">Cracks Detected</div>
+                <div class="card__sub">Alert condition</div>
+              </div>
+            </div>
+            <div style="padding: 16px; text-align: center;">
+              <div style="font-size: 32px; font-weight: 700; color: #ef4444;" id="mlCrackCount">0</div>
+              <div style="color: rgba(232,237,247,.6); font-size: 12px; margin-top: 4px;">
+                <span id="mlCrackPercent">0%</span> of all predictions
+              </div>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card__head">
+              <div>
+                <div class="card__title">Total Predictions</div>
+                <div class="card__sub">Sample count</div>
+              </div>
+            </div>
+            <div style="padding: 16px; text-align: center;">
+              <div style="font-size: 32px; font-weight: 700; color: #3b82f6;" id="mlTotalCount">0</div>
+              <div style="color: rgba(232,237,247,.6); font-size: 12px; margin-top: 4px;">
+                <span id="mlAvgConfidence">Avg: —%</span>
               </div>
             </div>
           </div>
@@ -768,6 +777,10 @@
               </div>
               <div class="capture-form">
                 <label class="capture-label">
+                  <span>Number of samples</span>
+                  <input type="number" id="captureCount" class="input" min="1" max="1000" value="1">
+                </label>
+                <label class="capture-label">
                   <span>Label</span>
                   <select id="captureLabel" class="input">
                     <option value="normal">Normal Track</option>
@@ -945,8 +958,268 @@
     </div>
   </div>
 
+  <script src="./graph-utils.js"></script>
+  <script src="./test-utils.js"></script>
   <script src="./app.js"></script>
   <script src="./training.js"></script>
-  <script>lucide.createIcons();</script>
+  <script>
+    lucide.createIcons();
+    
+    // Initialize animations on load
+    document.addEventListener('DOMContentLoaded', () => {
+      // ===================================================================
+      // LEVEL 10 UI ENHANCEMENTS - PROFESSIONAL ANIMATIONS & INTERACTIONS
+      // ===================================================================
+      
+      console.log('%c🎨 Applying Level 10 UI Enhancements...', 'color: #33ddc8; font-size: 14px; font-weight: bold');
+      
+      // Add entrance animations to cards with stagger effect
+      const cards = document.querySelectorAll('.card');
+      cards.forEach((card, index) => {
+        card.classList.add('animate-fadeInUp', 'card-hover', 'transition-smooth');
+        card.style.animationDelay = `${index * 0.05}s`;
+        card.style.opacity = '0';
+        setTimeout(() => {
+          card.style.opacity = '1';
+        }, index * 50);
+      });
+      
+      // Add professional animations to KPIs
+      const kpis = document.querySelectorAll('.kpi');
+      kpis.forEach((kpi, index) => {
+        kpi.classList.add('animate-scaleIn', 'hover-lift', 'transition-smooth');
+        kpi.style.animationDelay = `${index * 0.1}s`;
+      });
+      
+      // Add hover effects and animations to buttons
+      const buttons = document.querySelectorAll('.btn');
+      buttons.forEach(btn => {
+        btn.classList.add('btn-animated', 'hover-lift', 'transition-smooth');
+        
+        // Add ripple effect on click
+        btn.addEventListener('click', function(e) {
+          const ripple = document.createElement('span');
+          const rect = this.getBoundingClientRect();
+          const size = Math.max(rect.width, rect.height);
+          const x = e.clientX - rect.left - size / 2;
+          const y = e.clientY - rect.top - size / 2;
+          
+          ripple.style.cssText = `
+            position: absolute;
+            width: ${size}px;
+            height: ${size}px;
+            left: ${x}px;
+            top: ${y}px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+          `;
+          
+          this.style.position = 'relative';
+          this.style.overflow = 'hidden';
+          this.appendChild(ripple);
+          
+          setTimeout(() => ripple.remove(), 600);
+        });
+      });
+      
+      // Add animations to nav items with slide-in effect
+      const navItems = document.querySelectorAll('.nav__item');
+      navItems.forEach((item, index) => {
+        item.classList.add('animate-fadeInLeft', 'transition-smooth');
+        item.style.animationDelay = `${index * 0.05}s`;
+        
+        // Add smooth transition on hover
+        item.addEventListener('mouseenter', function() {
+          this.style.transform = 'translateX(5px)';
+        });
+        
+        item.addEventListener('mouseleave', function() {
+          if (!this.classList.contains('is-active')) {
+            this.style.transform = 'translateX(0)';
+          }
+        });
+      });
+      
+      // Animate topbar chips
+      const chips = document.querySelectorAll('.chip');
+      chips.forEach((chip, index) => {
+        chip.classList.add('animate-fadeIn', 'hover-grow', 'transition-smooth');
+        chip.style.animationDelay = `${index * 0.1}s`;
+      });
+      
+      // Add pulse animation to status indicators
+      const statusDots = document.querySelectorAll('.dot, .status-indicator');
+      statusDots.forEach(dot => {
+        if (dot.classList.contains('is-ok') || dot.classList.contains('status-active')) {
+          dot.classList.add('animate-pulse');
+        }
+      });
+      
+      // Smooth scroll for tab transitions
+      document.querySelectorAll('[data-tab]').forEach(tabButton => {
+        tabButton.addEventListener('click', function() {
+          const targetTab = document.getElementById(`tab-${this.dataset.tab}`);
+          if (targetTab) {
+            // Add exit animation to current tab
+            document.querySelectorAll('.tab.is-active').forEach(tab => {
+              tab.style.animation = 'fadeOut 0.2s ease-out';
+            });
+            
+            setTimeout(() => {
+              // Add entrance animation to new tab
+              targetTab.style.animation = 'fadeInUp 0.4s ease-out';
+            }, 200);
+          }
+        });
+      });
+      
+      // Add loading animations to charts
+      const chartContainers = document.querySelectorAll('.chartBox, .chart-container');
+      chartContainers.forEach((container, index) => {
+        container.classList.add('animate-fadeIn', 'transition-smooth');
+        container.style.animationDelay = `${index * 0.1}s`;
+      });
+      
+      // Animate tables on load
+      const tables = document.querySelectorAll('table');
+      tables.forEach(table => {
+        table.classList.add('animate-fadeIn');
+        const rows = table.querySelectorAll('tr');
+        rows.forEach((row, index) => {
+          row.style.animation = `fadeInUp 0.3s ease-out ${index * 0.03}s both`;
+        });
+      });
+      
+      // Add micro-interactions to form inputs
+      const inputs = document.querySelectorAll('input, select, textarea');
+      inputs.forEach(input => {
+        input.classList.add('transition-smooth');
+        
+        input.addEventListener('focus', function() {
+          this.style.transform = 'scale(1.02)';
+          this.style.boxShadow = '0 0 0 3px rgba(51, 221, 200, 0.2)';
+        });
+        
+        input.addEventListener('blur', function() {
+          this.style.transform = 'scale(1)';
+          this.style.boxShadow = 'none';
+        });
+      });
+      
+      // Add success animation helper
+      window.showSuccess = function(message) {
+        const toast = document.createElement('div');
+        toast.className = 'success-toast animate-slideInDown';
+        toast.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(70, 230, 139, 0.95), rgba(34, 197, 94, 0.95));
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(70, 230, 139, 0.3);
+            z-index: 9999;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          ">
+            <span style="font-size: 20px;">✓</span>
+            ${message}
+          </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.style.animation = 'slideOutUp 0.4s ease-out';
+          setTimeout(() => toast.remove(), 400);
+        }, 3000);
+      };
+      
+      // Add error animation helper
+      window.showError = function(message) {
+        const toast = document.createElement('div');
+        toast.className = 'error-toast animate-slideInDown animate-shake';
+        toast.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(239, 68, 68, 0.3);
+            z-index: 9999;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          ">
+            <span style="font-size: 20px;">✗</span>
+            ${message}
+          </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.style.animation = 'slideOutUp 0.4s ease-out';
+          setTimeout(() => toast.remove(), 400);
+        }, 4000);
+      };
+      
+      // Add info animation helper
+      window.showInfo = function(message) {
+        const toast = document.createElement('div');
+        toast.className = 'info-toast animate-slideInDown';
+        toast.innerHTML = `
+          <div style="
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.95));
+            color: white;
+            padding: 15px 20px;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+            z-index: 9999;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+          ">
+            <span style="font-size: 20px;">ℹ</span>
+            ${message}
+          </div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+          toast.style.animation = 'slideOutUp 0.4s ease-out';
+          setTimeout(() => toast.remove(), 400);
+        }, 3000);
+      };
+      
+      console.log('%c✓ Level 10 UI Enhancements Applied!', 'color: #46e68b; font-weight: bold');
+      console.log('%c✨ GANDIVA LEVEL 10 UI - Ready!', 'color: #33ddc8; font-size: 16px; font-weight: bold; text-shadow: 0 0 10px rgba(51, 221, 200, 0.5)');
+    });
+  </script>
+  
+  <!-- Enhanced Graph Utilities -->
+  <script src="./graph-utils-enhanced.js"></script>
+  
+  <!-- API Test Suite -->
+  <script src="./api-test-suite.js"></script>
+  
+  <!-- Loading States Manager -->
+  <script src="./loading-states.js"></script>
+  
+  <!-- Main Application Script -->
+  <script src="./app.js"></script>
 </body>
 </html>
