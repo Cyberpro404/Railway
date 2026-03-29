@@ -1,0 +1,44 @@
+// Add this function after scanPorts (around line 61)
+
+  const autoDetectPort = async () => {
+    setScanning(true)
+    try {
+      const response = await fetch('http://localhost:8000/api/v1/connection/auto-detect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      const result = await response.json()
+      
+      if (result.success && result.port) {
+        setSelectedPort(result.port)
+        setPorts([{ 
+          port: result.port, 
+          available: true, 
+          detected: `✅ Sensor Detected! (Signal: ${result.signal_strength || 95}%)`
+        }])
+        // Optional: Show success alert
+        console.log(`✅ Sensor found on ${result.port}!`, result)
+      } else {
+        console.warn(`⚠️ No sensor detected.`, result)
+        setPorts(result.tested_ports?.map((p: string) => ({ 
+          port: p, 
+          available: false, 
+          detected: 'No sensor' 
+        })) || [])
+      }
+    } catch (error) {
+      console.error('Auto-detect error:', error)
+    }
+    setScanning(false)
+  }
+
+// Add this button after the Scan button (around line 197), inside the same div:
+
+                    <button
+                      onClick={autoDetectPort}
+                      disabled={scanning}
+                      className="px-6 py-2 bg-gradient-to-r from-emerald-500/20 to-cyan-500/20 border border-emerald-500/40 text-emerald-400 rounded-lg hover:from-emerald-500/30 hover:to-cyan-500/30 transition-all disabled:opacity-50 flex items-center gap-2 font-semibold"
+                    >
+                      <Zap className={`w-5 h-5 ${scanning ? 'animate-pulse' : ''}`} />
+                      {scanning ? 'Detecting...' : 'Auto-Detect'}
+                    </button>

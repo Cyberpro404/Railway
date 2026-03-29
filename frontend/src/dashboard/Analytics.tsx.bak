@@ -1,0 +1,504 @@
+import { useState, useEffect } from 'react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from 'recharts'
+import Card from '@/components/ui/Card'
+import { Activity, Thermometer, Zap, TrendingUp, AlertTriangle, CheckCircle, XCircle, Wifi, WifiOff, Calendar, Download, Filter } from 'lucide-react'
+import { wsClient, WebSocketData } from '@/lib/websocket'
+import { usePersistentData } from '@/hooks/usePersistentData'
+import RegisterGraphPopup from '@/components/RegisterGraphPopup'
+
+// CSV export function
+const exportToCSV = (data: any[], filename: string) => {
+  if (data.length === 0) return
+  
+  const headers = Object.keys(data[0])
+  const csvContent = [
+    headers.join(','),
+    ...data.map(row => headers.map(header => row[header]).join(','))
+  ].join('\n')
+  
+  const blob = new Blob([csvContent], { type: 'text/csv' })
+  const url = window.URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  window.URL.revokeObjectURL(url)
+}
+
+interface ChartDataPoint {
+  time: string
+  z_rms: number
+  x_rms: number
+  z_accel: number
+  x_accel: number
+  temperature: number
+  z_peak: number
+  x_peak: number
+  frequency: number
+  kurtosis: number
+  crest_factor: number
+  rms_overall: number
+  energy: number
+  bearing_health: number
+  iso_class: string
+  alarm_status: string
+  humidity: number
+  vibration_trend: number
+  temp_trend: number
+  uptime: number
+  sensor_status: string
+  data_quality: number
+  [key: string]: any
+}
+
+interface ModbusRegister {
+  address: number
+  name: string
+  unit: string
+  key: string
+}
+
+// 21 Modbus Register Definitions (45201-45221)
+const MODBUS_REGISTERS: ModbusRegister[] = [
+  { address: 45201, name: 'Z RMS Velocity', unit: 'mm/s', key: 'z_rms' },
+  { address: 45202, name: 'X RMS Velocity', unit: 'mm/s', key: 'x_rms' },
+  { address: 45203, name: 'Z Peak Velocity', unit: 'mm/s', key: 'z_peak' },
+  { address: 45204, name: 'X Peak Velocity', unit: 'mm/s', key: 'x_peak' },
+  { address: 45205, name: 'Z Acceleration', unit: 'mm/s²', key: 'z_accel' },
+  { address: 45206, name: 'X Acceleration', unit: 'mm/s²', key: 'x_accel' },
+  { address: 45207, name: 'Temperature', unit: '°C', key: 'temperature' },
+  { address: 45208, name: 'Peak Frequency', unit: 'Hz', key: 'frequency' },
+  { address: 45209, name: 'Kurtosis Factor', unit: '', key: 'kurtosis' },
+  { address: 45210, name: 'Crest Factor', unit: '', key: 'crest_factor' },
+  { address: 45211, name: 'RMS Overall', unit: 'mm/s', key: 'rms_overall' },
+  { address: 45212, name: 'Energy Level', unit: 'mJ', key: 'energy' },
+  { address: 45213, name: 'Bearing Health Index', unit: '%', key: 'bearing_health' },
+  { address: 45214, name: 'ISO Severity Class', unit: '', key: 'iso_class' },
+  { address: 45215, name: 'Alarm Status', unit: '', key: 'alarm_status' },
+  { address: 45216, name: 'Humidity Level', unit: '%RH', key: 'humidity' },
+  { address: 45217, name: 'Vibration Trend', unit: 'mm/s/s', key: 'vibration_trend' },
+  { address: 45218, name: 'Temperature Trend', unit: '°C/min', key: 'temp_trend' },
+  { address: 45219, name: 'System Uptime', unit: 'hours', key: 'uptime' },
+  { address: 45220, name: 'Sensor Status', unit: '', key: 'sensor_status' },
+  { address: 45221, name: 'Data Quality', unit: '%', key: 'data_quality' },
+]
+
+export default function AnalyticsTab() {
+  const { chartData, sensorData, isLoading } = usePersistentData()
+  const [data, setData] = useState<WebSocketData | null>(null)
+  const [peakFrequency, setPeakFrequency] = useState<number>(0)
+  const [systemStatus, setSystemStatus] = useState<'Healthy' | 'Caution' | 'Critical'>('Healthy')
+  const [selectedRegister, setSelectedRegister] = useState<ModbusRegister | null>(null)
+  const [isPopupOpen, setIsPopupOpen] = useState(false)
+
+  useEffect(() => {
+    const unsubscribe = wsClient.subscribe((newData: WebSocketData) => {
+      setData(newData)
+      
+      if (newData.sensor_data) {
+        // Use real-time peak frequency from Modbus register 45208
+        const realTimePeakFreq = newData.sensor_data.frequency || 0
+        setPeakFrequency(realTimePeakFreq)
+        
+        // Update system status based on bearing health
+        const bearingHealth = newData.sensor_data.bearing_health || 95
+        if (bearingHealth >= 80) setSystemStatus('Healthy')
+        else if (bearingHealth >= 60) setSystemStatus('Caution')
+        else setSystemStatus('Critical')
+      }
+    })
+
+    return unsubscribe
+  }, [])
+
+  const handleExport = () => {
+    exportToCSV(chartData, `analytics_${new Date().toISOString().split('T')[0]}.csv`)
+  }
+
+  const handleRegisterClick = (register: ModbusRegister) => {
+    setSelectedRegister(register)
+    setIsPopupOpen(true)
+  }
+
+  const closePopup = () => {
+    setIsPopupOpen(false)
+    setSelectedRegister(null)
+  }
+
+  if (isLoading || chartData.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
+          <div className="text-text-muted font-medium">Loading persistent data...</div>
+        </div>
+      </div>
+    )
+  }
+
+  // Calculate statistics using sensorData for current values
+  const currentData = sensorData || data?.sensor_data || {}
+  const avgZRms = chartData.reduce((sum, d) => sum + d.z_rms, 0) / chartData.length
+  const avgXRms = chartData.reduce((sum, d) => sum + d.x_rms, 0) / chartData.length
+  const avgTemp = chartData.reduce((sum, d) => sum + d.temperature, 0) / chartData.length
+  const maxZRms = Math.max(...chartData.map(d => d.z_rms))
+  const maxXRms = Math.max(...chartData.map(d => d.x_rms))
+  const maxTemp = Math.max(...chartData.map(d => d.temperature))
+  const avgBearingHealth = chartData.reduce((sum, d) => sum + (d.bearing_health || 95), 0) / chartData.length
+
+  const statusColor = systemStatus === 'Healthy' ? 'text-success' : systemStatus === 'Caution' ? 'text-warning' : 'text-error'
+  const statusBgColor = systemStatus === 'Healthy' ? 'bg-success/10' : systemStatus === 'Caution' ? 'bg-warning/10' : 'bg-error/10'
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      {/* Enhanced Header */}
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <div className="w-1 h-8 bg-gradient-to-b from-primary to-primary/50 rounded-full" />
+            <h1 className="text-4xl font-bold text-text tracking-tight">Health Analytics Dashboard</h1>
+          </div>
+          <p className="text-text-muted font-medium flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
+            Real-time Modbus Sensor Data • 21 Registers (45201-45221) • 1 Hour Rolling Window
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className={`px-4 py-2 rounded-lg border flex items-center gap-2 ${statusBgColor}`}>
+            {systemStatus === 'Healthy' ? (
+              <>
+                <CheckCircle className={`w-5 h-5 ${statusColor}`} />
+                <span className={`font-semibold ${statusColor}`}>Healthy</span>
+              </>
+            ) : systemStatus === 'Caution' ? (
+              <>
+                <AlertCircle className={`w-5 h-5 ${statusColor}`} />
+                <span className={`font-semibold ${statusColor}`}>Caution</span>
+              </>
+            ) : (
+              <>
+                <AlertCircle className={`w-5 h-5 ${statusColor}`} />
+                <span className={`font-semibold ${statusColor}`}>Critical</span>
+              </>
+            )}
+          </div>
+          <button className="p-2.5 rounded-lg border border-border hover:bg-primary/10 hover:border-primary/40 transition-all">
+            <Filter className="w-5 h-5 text-primary" />
+          </button>
+          <button
+            onClick={handleExport}
+            className="px-6 py-3 bg-gradient-to-r from-primary to-primary/80 border border-primary/50 rounded-lg text-text font-semibold hover:shadow-lg hover:shadow-primary/30 transition-all flex items-center gap-2"
+          >
+            <Download className="w-4 h-4" />
+            Export CSV
+          </button>
+        </div>
+      </div>
+
+      {/* Key Metrics Grid - Primary Indicators */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <AnimatedStatCard
+          title="Avg Z RMS"
+          value={avgZRms.toFixed(3)}
+          unit="mm/s"
+          icon={<TrendingUp className="w-6 h-6" />}
+          color="primary"
+          delay={0.1}
+          trend={{
+            value: ((avgZRms - 2.5) / 2.5) * 100,
+            direction: avgZRms > 2.5 ? 'up' : 'down'
+          }}
+        />
+        <AnimatedStatCard
+          title="Avg X RMS"
+          value={avgXRms.toFixed(3)}
+          unit="mm/s"
+          icon={<TrendingUp className="w-6 h-6" />}
+          color="primary"
+          delay={0.2}
+          trend={{
+            value: ((avgXRms - 1.8) / 1.8) * 100,
+            direction: avgXRms > 1.8 ? 'up' : 'down'
+          }}
+        />
+        <AnimatedStatCard
+          title="Avg Temperature"
+          value={avgTemp.toFixed(1)}
+          unit="°C"
+          icon={<Thermometer className="w-6 h-6" />}
+          color="warning"
+          delay={0.3}
+          trend={{
+            value: ((avgTemp - 35) / 35) * 100,
+            direction: avgTemp > 35 ? 'up' : 'down'
+          }}
+        />
+        <AnimatedStatCard
+          title="Peak Frequency"
+          value={peakFrequency.toFixed(1)}
+          unit="Hz"
+          icon={<Zap className="w-6 h-6" />}
+          color="success"
+          delay={0.4}
+          trend={{
+            value: ((peakFrequency - 50) / 50) * 100,
+            direction: peakFrequency > 50 ? 'up' : 'down'
+          }}
+        />
+      </div>
+
+      {/* Chart Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Z/X RMS Velocity */}
+        <AdvancedChart title="Z/X RMS Velocity (45201-45202)" subtitle="Vertical and horizontal vibration trends - Real-time">
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={chartData.slice(-120)}>
+              <defs>
+                <linearGradient id="colorZ" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#00D4FF" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#00D4FF" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorX" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10B981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10B981" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" />
+              <XAxis dataKey="time" stroke="#9CA3AF" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+              <YAxis stroke="#9CA3AF" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+              <Tooltip contentStyle={{ backgroundColor: '#1A2332', border: '1px solid #2D3748', color: '#E5E7EB', borderRadius: '8px' }} />
+              <Legend />
+              <Area type="monotone" dataKey="z_rms" stroke="#00D4FF" strokeWidth={2} fillOpacity={1} fill="url(#colorZ)" name="Z RMS (mm/s)" />
+              <Area type="monotone" dataKey="x_rms" stroke="#10B981" strokeWidth={2} fillOpacity={1} fill="url(#colorX)" name="X RMS (mm/s)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </AdvancedChart>
+
+        {/* Peak Values */}
+        <AdvancedChart title="Peak Acceleration (45203-45204)" subtitle="Maximum instantaneous values - Critical Indicator">
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={chartData.slice(-120)}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" />
+              <XAxis dataKey="time" stroke="#9CA3AF" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+              <YAxis stroke="#9CA3AF" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+              <Tooltip contentStyle={{ backgroundColor: '#1A2332', border: '1px solid #2D3748', color: '#E5E7EB', borderRadius: '8px' }} />
+              <Legend />
+              <Line type="monotone" dataKey="z_peak" stroke="#F59E0B" strokeWidth={2.5} dot={false} name="Z Peak (mm/s)" />
+              <Line type="monotone" dataKey="x_peak" stroke="#8B5CF6" strokeWidth={2.5} dot={false} name="X Peak (mm/s)" />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </AdvancedChart>
+      </div>
+
+      {/* Temperature and Acceleration Charts */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Temperature Monitoring */}
+        <AdvancedChart title="Temperature Trend (45207)" subtitle="Thermal stress monitoring - Bearing heat analysis">
+          <ResponsiveContainer width="100%" height={300}>
+            <AreaChart data={chartData.slice(-120)}>
+              <defs>
+                <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#EF4444" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#EF4444" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" />
+              <XAxis dataKey="time" stroke="#9CA3AF" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+              <YAxis stroke="#9CA3AF" tick={{ fill: '#9CA3AF', fontSize: 12 }} label={{ value: '°C', angle: -90, position: 'insideLeft' }} />
+              <Tooltip contentStyle={{ backgroundColor: '#1A2332', border: '1px solid #2D3748', color: '#E5E7EB', borderRadius: '8px' }} />
+              <Area type="monotone" dataKey="temperature" stroke="#EF4444" strokeWidth={2} fill="url(#colorTemp)" name="Temperature (°C)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </AdvancedChart>
+
+        {/* Z vs X Acceleration */}
+        <AdvancedChart title="Z vs X Acceleration (45205-45206)" subtitle="Comparative axis analysis - Directional assessment">
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={chartData.slice(-120)}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#2D3748" />
+              <XAxis dataKey="time" stroke="#9CA3AF" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+              <YAxis stroke="#9CA3AF" tick={{ fill: '#9CA3AF', fontSize: 12 }} />
+              <Tooltip contentStyle={{ backgroundColor: '#1A2332', border: '1px solid #2D3748', color: '#E5E7EB', borderRadius: '8px' }} />
+              <Legend />
+              <Line type="monotone" dataKey="z_accel" stroke="#F59E0B" strokeWidth={2.5} dot={false} name="Z Accel (mm/s²)" />
+              <Line type="monotone" dataKey="x_accel" stroke="#EF4444" strokeWidth={2.5} dot={false} name="X Accel (mm/s²)" />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </AdvancedChart>
+      </div>
+
+      {/* All 21 Modbus Registers Display */}
+      <AnimatedCard delay={0.6}>
+        <AdvancedChart 
+          title="All 21 Modbus Registers (45201-45221)" 
+          subtitle="Complete sensor parameter overview with real-time values"
+          className="mt-6"
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {MODBUS_REGISTERS.map((register, idx) => {
+              const value = data?.sensor_data?.[register.key as keyof typeof data.sensor_data]
+              const displayValue = value !== undefined ? (
+                typeof value === 'number' ? value.toFixed(2) : value
+              ) : 'N/A'
+              
+              return (
+                <SlideIn key={idx} direction="up" delay={0.1 + (idx * 0.05)}>
+                  <div 
+                    className="bg-gradient-to-br from-background/50 to-background/30 rounded-lg p-4 border border-border/40 hover:border-primary/40 transition-all cursor-pointer hover:scale-105"
+                    onClick={() => handleRegisterClick(register)}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <p className="text-xs text-text-muted uppercase font-semibold tracking-wide">{register.name}</p>
+                      <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded font-mono">{register.address}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-2xl font-mono font-bold text-primary mb-1">
+                        {displayValue}
+                      </p>
+                      <PulseIndicator 
+                        active={value !== undefined && value !== 'N/A'} 
+                        color="primary" 
+                        size="sm"
+                      />
+                    </div>
+                    {register.unit && <p className="text-xs text-text-muted">{register.unit}</p>}
+                    <p className="text-xs text-primary/60 mt-2 text-center">Click for graph</p>
+                  </div>
+                </SlideIn>
+              )
+            })}
+          </div>
+        </AdvancedChart>
+      </AnimatedCard>
+
+      {/* Statistical Summary */}
+      <AdvancedChart 
+        title="Statistical Summary" 
+        subtitle="Aggregated metrics from current session (1-hour window)"
+        className="mt-6"
+      >
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg p-5 border border-primary/30">
+            <p className="text-xs text-text-muted uppercase mb-2 font-semibold tracking-wider">Z RMS Average</p>
+            <p className="text-3xl font-mono font-bold text-primary">
+              {avgZRms.toFixed(3)}
+            </p>
+            <p className="text-xs text-text-muted mt-2">mm/s</p>
+            <p className="text-xs text-primary/60 mt-1">Max: {maxZRms.toFixed(3)}</p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-primary/20 to-primary/5 rounded-lg p-5 border border-primary/30">
+            <p className="text-xs text-text-muted uppercase mb-2 font-semibold tracking-wider">X RMS Average</p>
+            <p className="text-3xl font-mono font-bold text-primary">
+              {avgXRms.toFixed(3)}
+            </p>
+            <p className="text-xs text-text-muted mt-2">mm/s</p>
+            <p className="text-xs text-primary/60 mt-1">Max: {maxXRms.toFixed(3)}</p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-warning/20 to-warning/5 rounded-lg p-5 border border-warning/30">
+            <p className="text-xs text-text-muted uppercase mb-2 font-semibold tracking-wider">Temperature Average</p>
+            <p className="text-3xl font-mono font-bold text-warning">
+              {avgTemp.toFixed(1)}
+            </p>
+            <p className="text-xs text-text-muted mt-2">°C</p>
+            <p className="text-xs text-warning/60 mt-1">Max: {maxTemp.toFixed(1)}</p>
+          </div>
+          
+          <div className="bg-gradient-to-br from-success/20 to-success/5 rounded-lg p-5 border border-success/30">
+            <p className="text-xs text-text-muted uppercase mb-2 font-semibold tracking-wider">Bearing Health</p>
+            <p className="text-3xl font-mono font-bold text-success">
+              {avgBearingHealth.toFixed(0)}%
+            </p>
+            <p className="text-xs text-text-muted mt-2">Overall Index</p>
+            <p className="text-xs text-success/60 mt-1">Status: {systemStatus}</p>
+          </div>
+        </div>
+      </AdvancedChart>
+
+      {/* Data Quality and System Info */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <AnimatedCard delay={0.7}>
+          <AdvancedChart title="Data Quality" subtitle="System performance metrics">
+            <div className="space-y-4">
+              <AnimatedProgress 
+                value={data?.sensor_data?.data_quality || 98} 
+                color="primary"
+                delay={0.8}
+              />
+              <AnimatedProgress 
+                value={data?.sensor_data?.bearing_health || 95} 
+                color="success"
+                delay={0.9}
+              />
+              <div className="text-xs text-text-muted space-y-1 mt-4">
+                <div className="flex items-center gap-2">
+                  <PulseIndicator active={true} color="primary" size="sm" />
+                  <p>📊 Data Points: {chartData.length}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <PulseIndicator active={true} color="success" size="sm" />
+                  <p>⏱️ Uptime: {(data?.sensor_data?.uptime || 168)} hours</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <PulseIndicator 
+                    active={data?.sensor_data?.sensor_status === 'Active'} 
+                    color={data?.sensor_data?.sensor_status === 'Active' ? 'success' : 'error'} 
+                    size="sm" 
+                  />
+                  <p>📡 Status: {data?.sensor_data?.sensor_status || 'Active'}</p>
+                </div>
+              </div>
+            </div>
+          </AdvancedChart>
+        </AnimatedCard>
+
+        <AdvancedChart title="Environmental Conditions" subtitle="Ambient measurements">
+          <div className="space-y-4">
+            <div className="bg-gradient-to-br from-warning/10 to-warning/5 rounded-lg p-4 border border-warning/20">
+              <p className="text-xs text-text-muted uppercase font-semibold mb-2">Current Temperature</p>
+              <p className="text-3xl font-mono font-bold text-warning">{data?.sensor_data?.temperature?.toFixed(1) || 25}°C</p>
+              <p className="text-xs text-warning/60 mt-2">Trend: {(data?.sensor_data?.temp_trend || 0)?.toFixed(2)}°C/min</p>
+            </div>
+            <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-lg p-4 border border-primary/20">
+              <p className="text-xs text-text-muted uppercase font-semibold mb-2">Humidity Level</p>
+              <p className="text-3xl font-mono font-bold text-primary">{(data?.sensor_data?.humidity || 45)}%RH</p>
+              <p className="text-xs text-primary/60 mt-2">Relative Humidity</p>
+            </div>
+          </div>
+        </AdvancedChart>
+
+        <AdvancedChart title="Advanced Parameters" subtitle="Statistical indicators">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center p-3 bg-background/30 rounded-lg border border-border/20">
+              <span className="text-sm text-text-muted">Kurtosis Factor</span>
+              <span className="text-lg font-mono font-bold text-primary">{(data?.sensor_data?.kurtosis || 3.5).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-background/30 rounded-lg border border-border/20">
+              <span className="text-sm text-text-muted">Crest Factor</span>
+              <span className="text-lg font-mono font-bold text-primary">{(data?.sensor_data?.crest_factor || 4.2).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-background/30 rounded-lg border border-border/20">
+              <span className="text-sm text-text-muted">RMS Overall</span>
+              <span className="text-lg font-mono font-bold text-success">{((data?.sensor_data?.z_rms || 0) + (data?.sensor_data?.x_rms || 0)).toFixed(3)} mm/s</span>
+            </div>
+            <div className="flex justify-between items-center p-3 bg-background/30 rounded-lg border border-border/20">
+              <span className="text-sm text-text-muted">ISO Severity</span>
+              <span className="text-lg font-mono font-bold text-warning">{data?.sensor_data?.iso_class || 'Zone A'}</span>
+            </div>
+          </div>
+        </AdvancedChart>
+      </div>
+
+      {/* Register Graph Popup */}
+      {selectedRegister && (
+        <RegisterGraphPopup
+          register={selectedRegister}
+          isOpen={isPopupOpen}
+          onClose={closePopup}
+        />
+      )}
+    </div>
+  )
+}
+

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import List, Optional
 from database import get_db, Threshold
-from datetime import datetime
+from datetime import datetime, timezone
 
 router = APIRouter()
 
@@ -68,13 +68,13 @@ async def create_threshold(threshold: ThresholdCreate, db: Session = Depends(get
             existing.axis = threshold.axis
         if threshold.band_number is not None:
             existing.band_number = threshold.band_number
-        existing.updated_at = datetime.utcnow()
+        existing.updated_at = datetime.now(timezone.utc)
         db.commit()
         db.refresh(existing)
         return existing
     else:
         # Create new
-        new_threshold = Threshold(**threshold.dict())
+        new_threshold = Threshold(**threshold.model_dump())
         db.add(new_threshold)
         db.commit()
         db.refresh(new_threshold)
@@ -102,7 +102,7 @@ async def update_threshold(
     if threshold.band_number is not None:
         existing.band_number = threshold.band_number
     
-    existing.updated_at = datetime.utcnow()
+    existing.updated_at = datetime.now(timezone.utc)
     db.commit()
     db.refresh(existing)
     return existing
@@ -132,7 +132,7 @@ async def reset_defaults(db: Session = Depends(get_db)):
         if existing:
             existing.warn_value = default["warn_value"]
             existing.alarm_value = default["alarm_value"]
-            existing.updated_at = datetime.utcnow()
+            existing.updated_at = datetime.now(timezone.utc)
         else:
             new_threshold = Threshold(**default)
             db.add(new_threshold)

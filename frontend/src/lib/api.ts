@@ -10,14 +10,22 @@ const api = axios.create({
   },
 })
 
-export interface Threshold {
-  id: number
-  parameter: string
-  warn_value: number
-  alarm_value: number
-  threshold_type: string
-  axis?: string
-  band_number?: number
+export interface ThresholdConfig {
+  id: string
+  parameter: 'z_rms' | 'x_rms' | 'temperature' | 'z_accel' | 'x_accel' | 'kurtosis'
+  parameterLabel: string
+  unit: string
+  minLimit: number
+  maxLimit: number
+}
+
+export interface ControllerThresholdConfig {
+  id: string
+  parameter: 'z_rms' | 'x_rms' | 'temperature' | 'z_accel' | 'x_accel' | 'kurtosis'
+  parameterLabel: string
+  unit: string
+  warningLimit: number
+  alertLimit: number
 }
 
 export interface Alert {
@@ -43,6 +51,30 @@ export interface ConnectionStatus {
   last_poll: string | null
   packet_loss: number
   auto_reconnect: boolean
+}
+
+export interface OfflineLogEntry {
+  timestamp: string | null
+  level: string
+  source?: string
+  message: string
+  raw: string
+}
+
+export interface OfflineLogResponse {
+  file: string
+  count: number
+  entries: OfflineLogEntry[]
+}
+
+export interface OfflineLogStats {
+  file: string
+  exists: boolean
+  size_bytes: number
+  size_mb: number
+  line_count: number
+  level_counts: Record<string, number>
+  last_updated: string | null
 }
 
 // Connection API
@@ -74,33 +106,26 @@ export const connectionAPI = {
 
 // Thresholds API
 export const thresholdsAPI = {
-  getAll: async (): Promise<Threshold[]> => {
-    const response = await api.get('/thresholds')
+  /** Fetch saved thresholds from backend (falls back to empty list). */
+  getAll: async (): Promise<ThresholdConfig[]> => {
+    const response = await api.get('/thresholds/get')
+    return response.data?.thresholds ?? []
+  },
+
+  /** Persist the full threshold set. */
+  saveAll: async (thresholds: ThresholdConfig[]): Promise<{ success: boolean; message?: string }> => {
+    const response = await api.post('/thresholds/save', thresholds)
     return response.data
   },
-  
-  get: async (parameter: string): Promise<Threshold> => {
-    const response = await api.get(`/thresholds/${parameter}`)
-    return response.data
+}
+
+export const controllerThresholdsAPI = {
+  getAll: async (): Promise<ControllerThresholdConfig[]> => {
+    const response = await api.get('/controller-thresholds/get')
+    return response.data?.thresholds ?? []
   },
-  
-  create: async (threshold: Partial<Threshold>): Promise<Threshold> => {
-    const response = await api.post('/thresholds', threshold)
-    return response.data
-  },
-  
-  update: async (parameter: string, threshold: Partial<Threshold>): Promise<Threshold> => {
-    const response = await api.put(`/thresholds/${parameter}`, threshold)
-    return response.data
-  },
-  
-  delete: async (parameter: string) => {
-    const response = await api.delete(`/thresholds/${parameter}`)
-    return response.data
-  },
-  
-  resetDefaults: async () => {
-    const response = await api.post('/thresholds/reset-defaults')
+  saveAll: async (thresholds: ControllerThresholdConfig[]): Promise<{ success: boolean; message?: string }> => {
+    const response = await api.post('/controller-thresholds/save', thresholds)
     return response.data
   },
 }
@@ -137,6 +162,18 @@ export const alertsAPI = {
 export const healthAPI = {
   check: async () => {
     const response = await api.get('/health')
+    return response.data
+  },
+}
+
+// Logs API (offline file-backed)
+export const logsAPI = {
+  getOfflineLogs: async (params?: { file?: string; limit?: number; search?: string }): Promise<OfflineLogResponse> => {
+    const response = await api.get('/logs/offline', { params })
+    return response.data
+  },
+  getOfflineStats: async (file: string = 'app'): Promise<OfflineLogStats> => {
+    const response = await api.get('/logs/offline/stats', { params: { file } })
     return response.data
   },
 }

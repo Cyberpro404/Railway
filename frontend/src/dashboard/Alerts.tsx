@@ -226,10 +226,10 @@ export default function AlertsTab() {
             {
               key: 'severity',
               label: 'Severity',
-              render: (value) => (
+              render: (value: unknown) => (
                 <StatusBadge
                   status={value === 'critical' ? 'critical' : 'warning'}
-                  label={value.toUpperCase()}
+                  label={(value as string).toUpperCase()}
                   size="sm"
                   animated
                 />
@@ -239,12 +239,12 @@ export default function AlertsTab() {
             {
               key: 'created_at',
               label: 'Created',
-              render: (value) => new Date(value).toLocaleString(),
+              render: (value: unknown) => new Date(value as string).toLocaleString(),
             },
             {
               key: 'acknowledged',
               label: 'Status',
-              render: (value) => (
+              render: (value: unknown) => (
                 <StatusBadge
                   status={value ? 'active' : 'pending'}
                   label={value ? 'Acknowledged' : 'Pending'}

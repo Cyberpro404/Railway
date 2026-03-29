@@ -22,33 +22,37 @@ export default function MetricCard({
   sparkline,
   animated = true
 }: MetricCardProps) {
-  const [displayValue, setDisplayValue] = useState(animated ? 0 : value)
+  // Convert string values back to numbers if needed
+  const numericValue = typeof value === 'string' ? parseFloat(value) : value
+  const stringValue = typeof value === 'string' ? value : (typeof value === 'number' ? value.toString() : String(value))
+  
+  const [displayValue, setDisplayValue] = useState(animated && typeof numericValue === 'number' ? 0 : numericValue)
   const [isVisible, setIsVisible] = useState(false)
 
   useEffect(() => {
     setIsVisible(true)
-    if (animated && typeof value === 'number') {
+    if (animated && typeof numericValue === 'number' && numericValue > 0) {
       const duration = 1000
       const steps = 60
-      const increment = value / steps
+      const increment = numericValue / steps
       const stepDuration = duration / steps
       let current = 0
       
       const timer = setInterval(() => {
         current += increment
-        if (current >= value) {
-          setDisplayValue(value)
+        if (current >= numericValue) {
+          setDisplayValue(numericValue)
           clearInterval(timer)
         } else {
-          setDisplayValue(Math.round(current * 100) / 100)
+          setDisplayValue(Math.round(current * 1000) / 1000)
         }
       }, stepDuration)
       
       return () => clearInterval(timer)
     } else {
-      setDisplayValue(value)
+      setDisplayValue(numericValue)
     }
-  }, [value, animated])
+  }, [numericValue, animated])
 
   const statusConfig = {
     good: {

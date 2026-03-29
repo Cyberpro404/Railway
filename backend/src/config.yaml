@@ -1,0 +1,74 @@
+system_name: Railway Rolling Stock Monitoring
+polling_interval_seconds: 1.0
+data_retention_days: 90
+devices:
+- device_id: DXM-001
+  name: Coach 1 Axle Box 1
+  location: Coach 1 - Axle 1
+  coach_id: C001
+  sensor_type: QM30VT2
+  primary_connection: tcp
+  tcp_host: 192.168.1.100
+  tcp_port: 502
+  serial_port: COM3
+  serial_baud: 19200
+  slave_id: 1
+  failover_enabled: true
+processing:
+  baseline_window_size: 300
+  temp_compensation_enabled: true
+  temp_reference: 25.0
+  temp_coefficient: 0.02
+  speed_normalization_enabled: false
+  reference_speed_kmh: 60.0
+defect_detection:
+  wheel_flat_kurtosis_threshold: 3.0
+  wheel_flat_peak_threshold: 10.0
+  bearing_hf_threshold: 2.0
+  bearing_kurtosis_threshold: 3.5
+  imbalance_rms_threshold: 4.0
+  min_confidence: 60.0
+alert_rules:
+- alert_type: threshold
+  severity: warning
+  parameter: z_rms_mm
+  defect_type: null
+  warning_threshold: 2.0
+  critical_threshold: 4.0
+  hysteresis: 0.1
+  notify_email: true
+  notify_sms: false
+- alert_type: threshold
+  severity: warning
+  parameter: temperature
+  defect_type: null
+  warning_threshold: 50.0
+  critical_threshold: 70.0
+  hysteresis: 0.1
+  notify_email: true
+  notify_sms: false
+email:
+  enabled: false
+  smtp_host: smtp.gmail.com
+  smtp_port: 587
+  username: ''
+  password: ''
+  use_tls: true
+  from_address: ''
+sms:
+  enabled: false
+  account_sid: ''
+  auth_token: ''
+  from_number: ''
+contacts:
+- name: Maintenance Team
+  email: maintenance@railway.com
+  phone: null
+  roles:
+  - operator
+  - admin
+  notify_sms: false
+  notify_email: true
+database_url: sqlite:///./railway_monitoring.db
+api_host: 0.0.0.0
+api_port: 8000

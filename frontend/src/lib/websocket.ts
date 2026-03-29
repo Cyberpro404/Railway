@@ -1,6 +1,16 @@
 /**
  * WebSocket client for real-time 1Hz data updates
  */
+
+/// <reference types="vite/client" />
+
+interface ImportMetaEnv {
+  readonly VITE_WS_URL?: string
+}
+
+interface ImportMeta {
+  readonly env: ImportMetaEnv
+}
 export interface SensorData {
   z_rms: number
   x_rms: number
@@ -9,7 +19,25 @@ export interface SensorData {
   z_accel: number
   x_accel: number
   temperature: number
+  frequency: number
+  kurtosis: number
+  crest_factor: number
+  rms_overall: number
+  energy: number
+  bearing_health: number
+  iso_class: string
+  alarm_status: string
+  humidity: number
+  vibration_trend: number
+  temp_trend: number
+  uptime: number
+  sensor_status: string
+  data_quality: number
+  maintenance_score?: number
+  spectrum?: Array<{ frequency: number, amplitude: number }>
   timestamp: string
+  raw_registers?: number[]
+  health_status?: any
 }
 
 export interface MLPrediction {
@@ -50,9 +78,32 @@ export interface WebSocketData {
   ml_prediction: MLPrediction | null
   iso_severity: ISOSeverity | null
   connection_status: ConnectionStatus
+  health_status?: any
+  source?: string
+  peak_hold?: number
 }
 
 type WebSocketCallback = (data: WebSocketData) => void
+
+/**
+ * Derive WebSocket URL from current page location or environment
+ */
+function deriveWebSocketUrl(): string {
+  // Check for explicit env var first
+  const envUrl = import.meta.env.VITE_WS_URL
+  if (envUrl) {
+    console.log('Using VITE_WS_URL:', envUrl)
+    return envUrl
+  }
+
+  // Always connect to backend port 8000 for WebSocket
+  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
+  const host = window.location.hostname
+  const url = `${protocol}//${host}:8000/ws`
+
+  console.log('Derived WebSocket URL:', url)
+  return url
+}
 
 class WebSocketClient {
   private ws: WebSocket | null = null
@@ -63,8 +114,8 @@ class WebSocketClient {
   private reconnectDelay = 1000
   private isConnecting = false
 
-  constructor(url: string = 'ws://localhost:8000/ws') {
-    this.url = url
+  constructor() {
+    this.url = deriveWebSocketUrl()
   }
 
   connect(): void {
@@ -95,10 +146,14 @@ class WebSocketClient {
       this.ws.onerror = (error) => {
         console.error('WebSocket error:', error)
         this.isConnecting = false
+        // Don't immediately reconnect on error, wait a bit
+        setTimeout(() => {
+          this.attemptReconnect()
+        }, 2000)
       }
 
-      this.ws.onclose = () => {
-        console.log('WebSocket disconnected')
+      this.ws.onclose = (event) => {
+        console.log('WebSocket disconnected, code:', event.code, 'reason:', event.reason)
         this.isConnecting = false
         this.attemptReconnect()
       }
@@ -116,10 +171,12 @@ class WebSocketClient {
     }
 
     this.reconnectAttempts++
+    const delay = Math.min(this.reconnectDelay * this.reconnectAttempts, 10000) // Max 10 second delay
+
     setTimeout(() => {
-      console.log(`Reconnecting... (attempt ${this.reconnectAttempts})`)
+      console.log(`Reconnecting... (attempt ${this.reconnectAttempts}) after ${delay}ms delay`)
       this.connect()
-    }, this.reconnectDelay * this.reconnectAttempts)
+    }, delay)
   }
 
   disconnect(): void {

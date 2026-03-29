@@ -1,0 +1,171 @@
+QUICKSTART - Hardware Controller Backend
+
+=== SETUP ===
+
+1. Install dependencies:
+   pip install -r requirements.txt
+
+2. Connect your ESP32/Arduino to USB
+   - Note the COM port (check Device Manager on Windows)
+
+3. Upload the Arduino sketch:
+   - Open controller.ino in Arduino IDE
+   - Select correct board and COM port
+   - Click Upload
+   - Verify "Output: OFF" appears in Serial Monitor
+
+4. Configure the backend:
+   - Edit main.py
+   - Change COM_PORT = "COM5" to your actual COM port
+   - Change BAUD_RATE = 9600 if your device uses different rate
+   - Save file
+
+5. Start the backend:
+   python main.py
+
+   Expected output:
+   INFO:     Started server process [xxxxx]
+   INFO: | __main__ | ✅ Successfully connected to COM5
+   INFO:     Uvicorn running on http://0.0.0.0:8000
+
+=== QUICK TEST ===
+
+Open PowerShell and test endpoints:
+
+1. Check device status:
+   curl http://localhost:8000/status
+
+2. List available COM ports:
+   curl http://localhost:8000/ports
+
+3. Send a control command (turn ON):
+   $body = @{value=100; threshold=50} | ConvertTo-Json
+   curl -X POST http://localhost:8000/send `
+     -ContentType "application/json" `
+     -Body $body
+
+4. Send another command (turn OFF):
+   $body = @{value=25; threshold=50} | ConvertTo-Json
+   curl -X POST http://localhost:8000/send `
+     -ContentType "application/json" `
+     -Body $body
+
+When successful, watch your Arduino Serial Monitor:
+   Output: ON
+   Output: OFF
+
+=== API ENDPOINTS ===
+
+GET /                       Health check
+GET /ports                  List available COM ports
+GET /status                 Get connection status and last command
+POST /connect               Connect to specific COM port
+POST /disconnect            Disconnect device
+POST /send                  Send control command (main endpoint)
+POST /send-raw              Send raw command string
+
+=== COMMAND LOGIC ===
+
+POST /send accepts:
+{
+  "value": <number>,
+  "threshold": <number>
+}
+
+Sends "1\n" if:  value > threshold
+Sends "0\n" if:  value <= threshold
+
+Example: value=75, threshold=50
+Result: 75 > 50 is TRUE → sends "1\n" (ON)
+
+=== TROUBLESHOOTING ===
+
+Q: "Failed to connect to COM5"
+A: Device might be in use by another program
+   - Close Arduino IDE Serial Monitor
+   - Verify port number in Device Manager
+   - Try /ports endpoint to see available ports
+
+Q: Commands sent but device doesn't respond
+A: Check these on Arduino:
+   - Baud rate matches (BAUD_RATE = 9600)
+   - pinMode(OUTPUT_PIN, OUTPUT) is called
+   - Pin 5 is not a special pin (avoid 0, 1 on Arduino)
+   - Hardware connection is correct
+
+Q: Garbage characters in Arduino Serial Monitor
+A: Baud rate mismatch
+   - Try: 9600, 115200, 19200, 38400
+   - Update both Arduino code and main.py
+
+Q: Connection works but commands not sent
+A: Verify Serial Monitor shows:
+   "Output: ON" or "Output: OFF"
+   This confirms device received the data
+
+Q: Port already in use
+A: Stop any other serial applications:
+   - Arduino IDE
+   - Other Python scripts using pyserial
+   - Serial monitor tools
+
+=== HARDWARE WIRING ===
+
+Example with LED + Buzzer + Relay:
+
+ESP32 Pin 5 → LED (with current-limiting resistor)
+           → Buzzer (with transistor driver)
+           → Relay (with protection diode)
+           → MOSFET (for high-power devices)
+
+GND → GND (all devices)
+3.3V → Power (LED through resistor)
+
+For high-power devices, use:
+- N-channel MOSFET (IRF540N) to switch external power
+- Relay module for isolation
+- Optocoupler for noisy environments
+
+=== RATE LIMITING ===
+
+Backend avoids sending the same command twice:
+- If last command was "ON" and next is also "ON" → skip send
+- This prevents unnecessary serial traffic
+- Logged as "Command unchanged, skipping send"
+
+=== FEATURES ===
+
+✓ Auto-connect on startup
+✓ Graceful error handling
+✓ State tracking (last command, last value)
+✓ Command deduplication (avoid repeated writes)
+✓ 2-second startup delay for device initialization
+✓ Configurable COM port and baud rate
+✓ Available port listing
+✓ Status monitoring via API
+
+=== PYTHON API USAGE ===
+
+import requests
+
+response = requests.post(
+    'http://localhost:8000/send',
+    json={'value': 100, 'threshold': 50}
+)
+print(response.json())
+
+=== NEXT STEPS ===
+
+1. Integrate with existing Python application:
+   import requests
+   response = requests.post('http://localhost:8000/send', 
+                           json={'value': sensor_value, 'threshold': 50})
+
+2. Add to systemd service (Linux) or Task Scheduler (Windows)
+
+3. Deploy on same network to control remote Arduino
+   (Change API_HOST from "0.0.0.0" to specific IP if needed)
+
+4. Add authentication/CORS if exposing beyond localhost
+
+5. Log commands to file for audit trail

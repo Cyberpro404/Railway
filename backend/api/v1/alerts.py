@@ -7,7 +7,7 @@ from sqlalchemy import desc
 from pydantic import BaseModel
 from typing import List, Optional
 from database import get_db, Alert
-from datetime import datetime
+from datetime import datetime, timezone
 
 router = APIRouter()
 
@@ -63,7 +63,7 @@ async def get_active_alerts(db: Session = Depends(get_db)):
 @router.post("/", response_model=AlertResponse)
 async def create_alert(alert: AlertCreate, db: Session = Depends(get_db)):
     """Create new alert"""
-    new_alert = Alert(**alert.dict())
+    new_alert = Alert(**alert.model_dump())
     db.add(new_alert)
     db.commit()
     db.refresh(new_alert)
@@ -77,7 +77,7 @@ async def acknowledge_alert(alert_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Alert not found")
     
     alert.acknowledged = True
-    alert.acknowledged_at = datetime.utcnow()
+    alert.acknowledged_at = datetime.now(timezone.utc)
     db.commit()
     return {"message": "Alert acknowledged"}
 

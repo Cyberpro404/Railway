@@ -1,12 +1,9 @@
-import { ReactNode } from 'react'
+import { Outlet } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import AlertBanner from './AlertBanner'
+import ConnectionStatus from './ConnectionStatus'
 
-interface LayoutProps {
-  children: ReactNode
-}
-
-export default function Layout({ children }: LayoutProps) {
+export default function Layout() {
   return (
     <div className="flex h-screen bg-background overflow-hidden relative">
       {/* Animated background gradient */}
@@ -19,10 +16,17 @@ export default function Layout({ children }: LayoutProps) {
       <Sidebar />
       
       <div className="flex-1 flex flex-col overflow-hidden relative z-10">
+        <div className="flex items-center justify-between p-4 border-b border-border/20">
+          <div className="flex items-center gap-4">
+            <h1 className="text-xl font-bold text-text">Gandiva Pro</h1>
+            <span className="text-sm text-text-muted">Railway Monitoring System</span>
+          </div>
+          <ConnectionStatus />
+        </div>
         <AlertBanner />
         <main className="flex-1 overflow-y-auto p-6 relative">
           <div className="max-w-[1920px] mx-auto">
-            {children}
+            <Outlet />
           </div>
         </main>
       </div>

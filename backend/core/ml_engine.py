@@ -9,7 +9,7 @@ from pathlib import Path
 from typing import Dict, Optional, Any
 import pickle
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.preprocessing import StandardScaler
 import asyncio
@@ -189,7 +189,7 @@ class MLEngine:
                     "anomaly": float(probabilities[1])
                 },
                 "feature_importance": importances,
-                "timestamp": datetime.utcnow().isoformat()
+                "timestamp": datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             logger.error(f"Prediction error: {e}")

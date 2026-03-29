@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "parameter": "z_rms",
+    "parameterLabel": "Z-Axis RMS",
+    "unit": "mm/s",
+    "minLimit": 2,
+    "maxLimit": 4.0
+  },
+  {
+    "id": "2",
+    "parameter": "temperature",
+    "parameterLabel": "Temperature",
+    "unit": "°C",
+    "minLimit": 2.0,
+    "maxLimit": 50
+  },
+  {
+    "id": "3",
+    "parameter": "x_rms",
+    "parameterLabel": "X-Axis RMS",
+    "unit": "mm/s",
+    "minLimit": 2.0,
+    "maxLimit": 3.8
+  }
+]

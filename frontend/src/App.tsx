@@ -1,23 +1,21 @@
-
+import { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { useEffect } from 'react'
-import Layout from './components/Layout'
-import ConnectionTab from './dashboard/Connection'
-import ExecutiveTab from './dashboard/Executive'
-import AnalyticsTab from './dashboard/Analytics'
-import MLTab from './dashboard/ML'
-import DataTab from './dashboard/Data'
-import LogsTab from './dashboard/Logs'
-import AlertsTab from './dashboard/Alerts'
-import ThresholdsTab from './dashboard/Thresholds'
-import ControlTab from './dashboard/Control'
 import { wsClient } from './lib/websocket'
+import Layout from './components/Layout'
+import NewDashboard from './dashboard/NewDashboard'
+import AnalyticsTab from './dashboard/AnalyticsSimple'
+import MLTab from './dashboard/ML'
+import AlertsEnhanced from './dashboard/AlertsEnhanced'
+import ConnectionTab from './dashboard/Connection'
+import ThresholdsSimple from './dashboard/ThresholdsSimple'
+import LogsDiagnostics from './dashboard/LogsDiagnostics'
+import NotFound from './pages/NotFound'
 
 function App() {
   useEffect(() => {
     // Connect WebSocket on app start
     wsClient.connect()
-    
+
     return () => {
       wsClient.disconnect()
     }
@@ -25,20 +23,18 @@ function App() {
 
   return (
     <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<ConnectionTab />} />
-          <Route path="/connection" element={<ConnectionTab />} />
-          <Route path="/executive" element={<ExecutiveTab />} />
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<NewDashboard />} />
           <Route path="/analytics" element={<AnalyticsTab />} />
           <Route path="/ml" element={<MLTab />} />
-          <Route path="/data" element={<DataTab />} />
-          <Route path="/logs" element={<LogsTab />} />
-          <Route path="/alerts" element={<AlertsTab />} />
-          <Route path="/thresholds" element={<ThresholdsTab />} />
-          <Route path="/control" element={<ControlTab />} />
-        </Routes>
-      </Layout>
+          <Route path="/alerts" element={<AlertsEnhanced />} />
+          <Route path="/connection" element={<ConnectionTab />} />
+          <Route path="/settings" element={<ThresholdsSimple />} />
+          <Route path="/logs" element={<LogsDiagnostics />} />
+          <Route path="*" element={<NotFound />} />
+        </Route>
+      </Routes>
     </Router>
   )
 }

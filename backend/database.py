@@ -4,7 +4,7 @@ SQLite Database Models and Setup
 from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -22,8 +22,8 @@ class Threshold(Base):
     threshold_type = Column(String, default="scalar")  # "scalar" or "band"
     axis = Column(String, nullable=True)  # "Z" or "X" for band thresholds
     band_number = Column(Integer, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
-    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
 class Alert(Base):
     """Alert history"""
@@ -39,7 +39,7 @@ class Alert(Base):
     ml_confidence = Column(Float, nullable=True)
     acknowledged = Column(Boolean, default=False)
     acknowledged_at = Column(DateTime, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 class LogEntry(Base):
     """Operation log entries"""
@@ -49,7 +49,7 @@ class LogEntry(Base):
     level = Column(String, index=True)  # "DEBUG", "INFO", "WARN", "ERROR", "MODBUS"
     message = Column(Text)
     source = Column(String, nullable=True)  # "backend", "modbus", "ml", etc.
-    created_at = Column(DateTime, default=datetime.utcnow, index=True)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc), index=True)
 
 class TrainingData(Base):
     """ML training dataset"""
@@ -69,7 +69,7 @@ class TrainingData(Base):
     x_crest_factor = Column(Float)
     z_x_ratio = Column(Float)
     label = Column(Integer)  # 0 = normal, 1 = anomaly
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 # Database setup
 SQLALCHEMY_DATABASE_URL = "sqlite:///./gandiva_pro.db"

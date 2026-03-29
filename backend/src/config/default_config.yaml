@@ -1,0 +1,194 @@
+# Railway Rolling Stock Condition Monitoring System - Configuration
+# This file contains all configurable parameters for the monitoring system
+
+# ==================== SYSTEM SETTINGS ====================
+system_name: "Railway Rolling Stock Condition Monitoring"
+polling_interval_seconds: 1.0  # Data acquisition rate (Hz)
+data_retention_days: 90  # Automatic cleanup of old data
+
+# ==================== DXM DEVICES ====================
+# Configure one entry per DXM controller/sensor
+# Primary connection: TCP/IP, Fallback: Serial RS485
+devices:
+  # Device 1: Coach 1 - Axle Box 1
+  - device_id: "DXM-C001-A1"
+    name: "Coach 1 Axle Box 1"
+    location: "Coach 1 - Axle 1 (Left)"
+    coach_id: "C001"
+    sensor_type: "QM30VT2"
+    primary_connection: "tcp"  # tcp or serial
+    tcp_host: "192.168.1.101"
+    tcp_port: 502
+    serial_port: "COM3"
+    serial_baud: 19200
+    slave_id: 1
+    failover_enabled: true
+
+  # Device 2: Coach 1 - Axle Box 2
+  - device_id: "DXM-C001-A2"
+    name: "Coach 1 Axle Box 2"
+    location: "Coach 1 - Axle 2 (Right)"
+    coach_id: "C001"
+    sensor_type: "QM30VT2"
+    primary_connection: "tcp"
+    tcp_host: "192.168.1.102"
+    tcp_port: 502
+    serial_port: "COM4"
+    serial_baud: 19200
+    slave_id: 2
+    failover_enabled: true
+
+  # Device 3: Coach 2 - Axle Box 1
+  - device_id: "DXM-C002-A1"
+    name: "Coach 2 Axle Box 1"
+    location: "Coach 2 - Axle 1 (Left)"
+    coach_id: "C002"
+    sensor_type: "QM30VT2"
+    primary_connection: "tcp"
+    tcp_host: "192.168.1.103"
+    tcp_port: 502
+    serial_port: "COM5"
+    serial_baud: 19200
+    slave_id: 3
+    failover_enabled: true
+
+# ==================== SIGNAL PROCESSING ====================
+processing:
+  # Baseline calculation (adaptive thresholds)
+  baseline_window_size: 300  # 5 minutes at 1 Hz
+  baseline_update_interval: 60  # Update every 60 samples
+  
+  # Temperature compensation
+  temp_compensation_enabled: true
+  temp_reference: 25.0  # Reference temperature in °C
+  temp_coefficient: 0.02  # Vibration change per °C
+  
+  # Speed normalization (if speed data available)
+  speed_normalization_enabled: false
+  reference_speed_kmh: 60.0
+  speed_exponent: 1.5
+
+# ==================== DEFECT DETECTION ====================
+defect_detection:
+  # Wheel flat detection
+  wheel_flat_kurtosis_threshold: 3.0
+  wheel_flat_peak_threshold: 10.0  # G
+  
+  # Bearing defect detection
+  bearing_hf_threshold: 2.0  # HF RMS threshold (G)
+  bearing_kurtosis_threshold: 3.5
+  bearing_crest_factor_threshold: 6.0
+  
+  # Imbalance detection
+  imbalance_rms_threshold: 4.0  # mm/s
+  imbalance_crest_factor_max: 3.0
+  
+  # Minimum confidence to report defect
+  min_confidence: 60.0  # 0-100%
+
+# ==================== ALERT RULES ====================
+alert_rules:
+  # Vibration threshold alerts
+  - alert_type: "threshold"
+    severity: "warning"
+    parameter: "z_rms_mm"
+    warning_threshold: 2.0
+    critical_threshold: 4.0
+    hysteresis: 0.1
+    notify_email: true
+    notify_sms: false
+
+  - alert_type: "threshold"
+    severity: "warning"
+    parameter: "x_rms_mm"
+    warning_threshold: 2.0
+    critical_threshold: 4.0
+    hysteresis: 0.1
+    notify_email: true
+    notify_sms: false
+
+  # Temperature alerts
+  - alert_type: "threshold"
+    severity: "warning"
+    parameter: "temperature"
+    warning_threshold: 50.0
+    critical_threshold: 70.0
+    hysteresis: 2.0
+    notify_email: true
+    notify_sms: false
+
+  # Defect type alerts
+  - alert_type: "defect"
+    severity: "critical"
+    defect_type: "bearing_outer_race"
+    notify_email: true
+    notify_sms: true
+
+  - alert_type: "defect"
+    severity: "critical"
+    defect_type: "bearing_inner_race"
+    notify_email: true
+    notify_sms: true
+
+  - alert_type: "defect"
+    severity: "warning"
+    defect_type: "wheel_flat"
+    notify_email: true
+    notify_sms: false
+
+  # Connectivity alerts
+  - alert_type: "connectivity"
+    severity: "warning"
+    notify_email: true
+    notify_sms: false
+
+# ==================== EMAIL NOTIFICATIONS (SMTP) ====================
+email:
+  enabled: false  # Set to true to enable
+  smtp_host: "smtp.gmail.com"
+  smtp_port: 587
+  username: "your-email@gmail.com"
+  password: "your-app-password"  # Use app-specific password
+  use_tls: true
+  from_address: "railway-alerts@yourcompany.com"
+
+# ==================== SMS NOTIFICATIONS (Twilio) ====================
+sms:
+  enabled: false  # Set to true to enable
+  account_sid: "your-twilio-account-sid"
+  auth_token: "your-twilio-auth-token"
+  from_number: "+1234567890"  # Your Twilio phone number
+
+# ==================== NOTIFICATION CONTACTS ====================
+contacts:
+  - name: "Maintenance Manager"
+    email: "maintenance@railway.com"
+    phone: "+1234567890"
+    roles: ["admin", "operator"]
+    notify_sms: true
+    notify_email: true
+
+  - name: "Operations Center"
+    email: "ops@railway.com"
+    roles: ["operator"]
+    notify_sms: false
+    notify_email: true
+
+  - name: "Engineering Team"
+    email: "engineering@railway.com"
+    roles: ["viewer"]
+    notify_sms: false
+    notify_email: true
+
+# ==================== DATABASE ====================
+database_url: "sqlite:///./railway_monitoring.db"
+
+# ==================== API SERVER ====================
+api_host: "0.0.0.0"
+api_port: 8000
+
+# ==================== SECURITY (Optional) ====================
+# JWT authentication settings
+jwt_secret: "your-secret-key-change-this-in-production"
+jwt_algorithm: "HS256"
+access_token_expire_minutes: 30

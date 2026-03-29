@@ -1,0 +1,39 @@
+# Auto-detect endpoint to add to app.py
+
+@app.post("/api/v1/connection/auto-detect")
+async def auto_detect_sensor():
+    """
+    Automatically detect COM port with active Modbus sensor
+    Scans all available ports and tests for valid Modbus response
+    """
+    if not modbus_client:
+        raise HTTPException(status_code=500, detail="Modbus client not initialized")
+    
+    from core.auto_detect_port import auto_detect_modbus_port
+    
+    # Run auto-detection
+    result = await auto_detect_modbus_port(
+        start_register=modbus_client.START_REGISTER,
+        baud=19200,
+        slave_id=1
+    )
+    
+    # If sensor found, auto-connect
+    if result["success"] and result["port"]:
+        logger.info(f"🎯 Auto-connecting to {result['port']}...")
+        success = await modbus_client.connect(
+            port=result["port"],
+            baud=result["baud"],
+            slave_id=result["slave_id"]
+        )
+        
+        if success:
+            result["connected"] = True
+            result["message"] = f"Sensor detected and connected on {result['port']}"
+        else:
+            result["connected"] = False
+            result["message"] = f"Sensor detected on {result['port']} but connection failed"
+    else:
+        result["connected"] = False
+    
+    return result
