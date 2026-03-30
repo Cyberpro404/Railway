@@ -161,6 +161,29 @@ async def main_processing_loop():
         except Exception as e:
             logger.error(f"Processing Loop Error: {e}")
             await asyncio.sleep(1.0)
+            
+        if not raw_packet or not raw_packet.get("valid"):
+            # Provide empty fallback so frontend UI doesn't hang on "Connecting..."
+            fallback_packet = {
+                "timestamp": datetime.now().isoformat(),
+                "sensor_data": {
+                    "z_rms": 0, "x_rms": 0, "z_accel": 0, "x_accel": 0, "temperature": 0, 
+                    "frequency": 0, "kurtosis": 0, "crest_factor": 0, "z_peak": 0, "x_peak": 0,
+                    "rms_overall": 0, "bearing_health": 0, "raw_registers": [],
+                    "alarm_status": "Disconnected", "data_quality": 0, "iso_class": "Unknown"
+                },
+                "features": {},
+                "ml_prediction": None,
+                "iso_severity": None,
+                "connection_status": connection_manager.get_status(),
+                "demo_mode": DEMO_MODE,
+                "source": "SYSTEM",
+                "latency_ms": 0,
+                "peak_hold": 0
+            }
+            data_buffer = fallback_packet
+            await realtime_stream.broadcast(fallback_packet)
+            await asyncio.sleep(1.0) # Prevent tight loop lock, update 1hz
 
 # ==================== LIFESPAN ====================
 

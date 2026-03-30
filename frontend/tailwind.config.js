@@ -17,19 +17,19 @@ export default {
     },
     extend: {
       colors: {
-        // Midnight Steel Theme
-        background: "#0A0F1A",
-        card: "#1A2332",
-        primary: "#00D4FF",
-        "primary-foreground": "#0A0F1A",
-        success: "#10B981",
-        warning: "#F59E0B",
-        critical: "#EF4444",
-        text: "#E5E7EB",
-        "text-muted": "#9CA3AF",
-        border: "#2D3748",
-        input: "#2D3748",
-        ring: "#00D4FF",
+        // Project Gandhiva SCADA Theme
+        background: "#1a1a1a",
+        card: "#2d2d2d",
+        primary: "#0078d4",
+        "primary-foreground": "#ffffff",
+        success: "#4caf50",
+        warning: "#ff9800",
+        critical: "#f44336",
+        text: "#e0e0e0",
+        "text-muted": "#a0a0a0",
+        border: "#404040",
+        input: "#404040",
+        ring: "#0078d4",
       },
       borderRadius: {
         lg: "8px",

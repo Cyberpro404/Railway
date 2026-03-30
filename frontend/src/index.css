@@ -18,12 +18,7 @@
     @apply bg-background text-text;
     font-family: 'Sora', 'Inter', sans-serif;
     overflow-x: hidden;
-    background: 
-      radial-gradient(circle at 20% 50%, rgba(0, 212, 255, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
-      radial-gradient(circle at 40% 20%, rgba(245, 158, 11, 0.03) 0%, transparent 50%),
-      #0A0F1A;
-    background-attachment: fixed;
+    background: #1a1a1a;
     min-height: 100vh;
   }
   
@@ -63,31 +58,22 @@
 }
 
 @layer utilities {
-  /* Advanced Glass Morphism */
+  /* Industrial Flat Morphism */
   .glassmorphism {
-    background: rgba(26, 35, 50, 0.75);
-    backdrop-filter: blur(24px) saturate(180%);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgba(0, 212, 255, 0.2);
-    box-shadow: 
-      0 8px 32px 0 rgba(0, 0, 0, 0.4),
-      inset 0 1px 0 rgba(255, 255, 255, 0.1),
-      0 0 0 1px rgba(0, 212, 255, 0.05);
+    background: rgba(45, 45, 45, 0.95);
+    border: 1px solid #404040;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   }
   
   .glassmorphism-dark {
-    background: rgba(10, 15, 25, 0.85);
-    backdrop-filter: blur(30px) saturate(150%);
-    -webkit-backdrop-filter: blur(30px) saturate(150%);
-    border: 1px solid rgba(0, 212, 255, 0.15);
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+    background: rgba(26, 26, 26, 0.95);
+    border: 1px solid #404040;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.5);
   }
   
   .glassmorphism-light {
-    background: rgba(26, 35, 50, 0.6);
-    backdrop-filter: blur(16px) saturate(200%);
-    -webkit-backdrop-filter: blur(16px) saturate(200%);
-    border: 1px solid rgba(0, 212, 255, 0.25);
+    background: rgba(60, 60, 60, 0.9);
+    border: 1px solid #505050;
   }
   
   /* Advanced Neon Effects */

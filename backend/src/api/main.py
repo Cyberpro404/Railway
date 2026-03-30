@@ -29,6 +29,7 @@ from storage.database import (
     Device, RawData, Alert, AlertSeverity, AlertStatus, DefectDetection,
     Event, DataExport, SystemStatus
 )
+from api.device_management_simple import router as device_router
 
 logger = logging.getLogger(__name__)
 security = HTTPBearer()
@@ -215,6 +216,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Include device management router
+app.include_router(device_router, prefix="/api/v1")
 
 
 # ==================== SYSTEM STATUS ENDPOINTS ====================

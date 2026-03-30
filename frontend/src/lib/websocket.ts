@@ -38,6 +38,8 @@ export interface SensorData {
   timestamp: string
   raw_registers?: number[]
   health_status?: any
+  peak_accel: number
+  peak_velocity: number
 }
 
 export interface MLPrediction {
@@ -81,6 +83,10 @@ export interface WebSocketData {
   health_status?: any
   source?: string
   peak_hold?: number
+  device_address?: string
+  tcp_port?: number
+  response_time_ms?: number
+  device_id?: string
 }
 
 type WebSocketCallback = (data: WebSocketData) => void
@@ -98,7 +104,8 @@ function deriveWebSocketUrl(): string {
 
   // Always connect to backend port 8000 for WebSocket
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  const host = window.location.hostname
+  let host = window.location.hostname
+  if (host === 'localhost') host = '127.0.0.1'
   const url = `${protocol}//${host}:8000/ws`
 
   console.log('Derived WebSocket URL:', url)

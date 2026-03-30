@@ -1,2 +1,0 @@
-# Gandiva Pro Backend
-
