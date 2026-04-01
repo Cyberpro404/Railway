@@ -87,7 +87,7 @@ const ConnectionTab: React.FC = () => {
 
   const fetchNetworkInterfaces = async () => {
     try {
-      const response = await fetch('/api/v1/devices/interfaces');
+      const response = await fetch('/api/v1/interfaces');
       const data = await response.json();
       setNetworkInterfaces(data.interfaces || []);
     } catch (error) {
@@ -97,7 +97,7 @@ const ConnectionTab: React.FC = () => {
 
   const fetchNetworkRanges = async () => {
     try {
-      const response = await fetch('/api/v1/devices/network/ranges');
+      const response = await fetch('/api/v1/network/ranges');
       const data = await response.json();
       setNetworkRanges(data.network_ranges || []);
       if (data.network_ranges?.length > 0) {
@@ -110,7 +110,7 @@ const ConnectionTab: React.FC = () => {
 
   const fetchConnectedDevices = async () => {
     try {
-      const response = await fetch('/api/v1/devices/connected');
+      const response = await fetch('/api/v1/connected');
       const data = await response.json();
       setConnectedDevices(data.connected_devices || []);
     } catch (error) {
@@ -123,7 +123,7 @@ const ConnectionTab: React.FC = () => {
     setScanProgress(0);
     
     try {
-      const response = await fetch('/api/v1/devices/scan/network', {
+      const response = await fetch('/api/v1/scan/network', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -139,7 +139,7 @@ const ConnectionTab: React.FC = () => {
       // Poll for scan results
       const pollInterval = setInterval(async () => {
         try {
-          const statusResponse = await fetch(`/api/v1/devices/scan/${data.scan_id}`);
+          const statusResponse = await fetch(`/api/v1/scan/${data.scan_id}`);
           const statusData = await statusResponse.json();
           
           setScanProgress(statusData.status === 'completed' ? 100 : 50);
@@ -171,7 +171,7 @@ const ConnectionTab: React.FC = () => {
 
   const connectToDevice = async (device: ModbusDevice) => {
     try {
-      const response = await fetch('/api/v1/devices/connect', {
+      const response = await fetch('/api/v1/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -198,7 +198,7 @@ const ConnectionTab: React.FC = () => {
 
   const disconnectDevice = async (deviceId: string) => {
     try {
-      const response = await fetch(`/api/v1/devices/disconnect/${deviceId}`, {
+      const response = await fetch(`/api/v1/disconnect/${deviceId}`, {
         method: 'DELETE'
       });
       
