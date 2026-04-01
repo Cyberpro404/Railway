@@ -105,9 +105,17 @@ function deriveWebSocketUrl(): string {
     return envUrl
   }
 
-  // Use same host:port as the page → Vite proxies /ws to backend
+  // For development, connect directly to backend WebSocket
+  const isDev = import.meta.env.DEV
+  if (isDev) {
+    const url = 'ws://localhost:8000/api/v2/ws/realtime'
+    console.log('[WS] Connecting directly to backend in dev:', url)
+    return url
+  }
+
+  // Production: Use same host:port as the page → Vite proxies /ws to backend
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  const url = `${protocol}//${window.location.host}/ws`
+  const url = `${protocol}//${window.location.host}/api/v2/ws/realtime`
   console.log('[WS] Connecting via Vite proxy:', url)
   return url
 }

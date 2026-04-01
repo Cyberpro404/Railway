@@ -38,7 +38,7 @@ export default defineConfig({
         target: 'http://localhost:8000',
         changeOrigin: true,
       },
-      '/ws': {
+      '/api/v2/ws/realtime': {
         target: 'ws://localhost:8000',
         ws: true,
       },
