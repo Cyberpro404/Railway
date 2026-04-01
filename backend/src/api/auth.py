@@ -11,7 +11,7 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
 # Security configuration
-SECRET_KEY = "your-secret-key-change-this-in-production"  # Change in production
+SECRET_KEY = "gandiva-secret-key-prod"  # Change in production
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 

@@ -50,13 +50,13 @@ const OverviewTab: React.FC = () => {
 
   // Core metrics
   const [metrics, setMetrics] = useState<MetricCard[]>([
-    { label: 'Z RMS', value: '2.34', unit: 'mm/s', status: 'normal' },
-    { label: 'X RMS', value: '1.89', unit: 'mm/s', status: 'normal' },
-    { label: 'Peak Accel', value: '0.82', unit: 'g', status: 'warning' },
-    { label: 'Peak Vel', value: '12.4', unit: 'mm/s', status: 'normal' },
-    { label: 'Kurtosis', value: '3.21', unit: '', status: 'normal' },
-    { label: 'Crest', value: '4.56', unit: '', status: 'normal' },
-    { label: 'Temp', value: '42.3', unit: '°C', status: 'normal' }
+    { label: 'Z RMS', value: '0.00', unit: 'mm/s', status: 'normal' },
+    { label: 'X RMS', value: '0.00', unit: 'mm/s', status: 'normal' },
+    { label: 'Peak Accel', value: '0.00', unit: 'g', status: 'warning' },
+    { label: 'Peak Vel', value: '0.00', unit: 'mm/s', status: 'normal' },
+    { label: 'Kurtosis', value: '0.00', unit: '', status: 'normal' },
+    { label: 'Crest', value: '0.00', unit: '', status: 'normal' },
+    { label: 'Temp', value: '0.00', unit: '°C', status: 'normal' }
   ])
 
   useEffect(() => {
@@ -68,19 +68,41 @@ const OverviewTab: React.FC = () => {
     const handleData = (newData: WebSocketData) => {
       setData(newData)
       
+      
       if (newData.sensor_data) {
         setMetrics([
-          { label: 'Z RMS', value: newData.sensor_data.z_rms?.toFixed(2) || '2.34', unit: 'mm/s', status: 'normal' },
-          { label: 'X RMS', value: newData.sensor_data.x_rms?.toFixed(2) || '1.89', unit: 'mm/s', status: 'normal' },
-          { label: 'Peak Accel', value: newData.sensor_data.peak_accel?.toFixed(2) || '0.82', unit: 'g', status: 'warning' },
-          { label: 'Peak Vel', value: newData.sensor_data.peak_velocity?.toFixed(1) || '12.4', unit: 'mm/s', status: 'normal' },
-          { label: 'Kurtosis', value: newData.sensor_data.kurtosis?.toFixed(2) || '3.21', unit: '', status: 'normal' },
-          { label: 'Crest', value: newData.sensor_data.crest_factor?.toFixed(2) || '4.56', unit: '', status: 'normal' },
-          { label: 'Temp', value: newData.sensor_data.temperature?.toFixed(1) || '42.3', unit: '°C', status: 'normal' }
+          { label: 'Z RMS', value: newData.sensor_data.z_rms?.toFixed(2) ?? '0.00', unit: 'mm/s', status: 'normal' },
+          { label: 'X RMS', value: newData.sensor_data.x_rms?.toFixed(2) ?? '0.00', unit: 'mm/s', status: 'normal' },
+          { label: 'Peak Accel', value: newData.sensor_data.peak_accel?.toFixed(2) ?? '0.00', unit: 'g', status: (newData.sensor_data.peak_accel || 0) > 1.0 ? 'warning' : 'normal' },
+          { label: 'Peak Vel', value: newData.sensor_data.peak_velocity?.toFixed(1) ?? '0.0', unit: 'mm/s', status: 'normal' },
+          { label: 'Kurtosis', value: newData.sensor_data.kurtosis?.toFixed(2) ?? '0.00', unit: '', status: 'normal' },
+          { label: 'Crest', value: newData.sensor_data.crest_factor?.toFixed(2) ?? '0.00', unit: '', status: 'normal' },
+          { label: 'Temp', value: newData.sensor_data.temperature?.toFixed(1) ?? '0.0', unit: '°C', status: (newData.sensor_data.temperature || 0) > 50 ? 'warning' : 'normal' }
         ])
+        
+        setTrendData(prev => {
+          const newItem = {
+            time: new Date().toLocaleTimeString('en-US', { hour12: false }),
+            rms: newData.sensor_data?.z_rms || 0,
+            temp: newData.sensor_data?.temperature || 0
+          }
+          return [...prev, newItem].slice(-60)
+        })
+        
+        // Use actual waveform and FFT data if provided by the backend, else keep empty
+        if ((newData.sensor_data as any).waveform) {
+            setWaveformData((newData.sensor_data as any).waveform)
+        } else {
+            setWaveformData([])
+        }
+        
+        if ((newData.sensor_data as any).fft) {
+            setFFTData((newData.sensor_data as any).fft)
+        } else {
+            setFFTData([])
+        }
       }
 
-      // Update ML prediction and defect with realistic TCP/IP Modbus data
       if (newData.ml_prediction) {
         const isDefect = newData.ml_prediction.class === 1
         const defectType = isDefect ? 'WHEEL FLAT DETECTED' : 'NORMAL'
@@ -96,46 +118,7 @@ const OverviewTab: React.FC = () => {
     return unsubscribe
   }, [])
 
-  useEffect(() => {
-    // Simulate data
-    const generateData = () => {
-      const fft = []
-      const waveform = []
-      const trend = []
-      
-      for (let i = 0; i < 100; i++) {
-        fft.push({
-          frequency: i * 5,
-          amplitude: Math.random() * 30 + (i === 20 ? 80 : 0), // Abnormal peak
-          band: (i <= 16 ? 'wheel' as const : i <= 60 ? 'bearing' as const : 'noise' as const),
-          abnormal: i === 20
-        })
-      }
-      
-      for (let i = 0; i < 200; i++) {
-        waveform.push({
-          time: i,
-          amplitude: Math.sin(i * 0.1) * 2 + (i % 50 === 0 ? 8 : 0) // Spikes
-        })
-      }
-      
-      for (let i = 0; i < 60; i++) {
-        trend.push({
-          time: i,
-          rms: 2.0 + Math.random() * 0.5,
-          temp: 40 + Math.random() * 5
-        })
-      }
-      
-      setFFTData(fft)
-      setWaveformData(waveform)
-      setTrendData(trend)
-    }
-
-    generateData()
-    const interval = setInterval(generateData, 2000)
-    return () => clearInterval(interval)
-  }, [])
+  
 
   const isConnected = data?.connection_status?.connected ?? false
 

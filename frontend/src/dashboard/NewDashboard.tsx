@@ -251,6 +251,59 @@ export default function NewDashboard() {
           </div>
         </div>
       </div>
+
+      {/* RAW REGISTER DATA - Device Communication Status */}
+      <div className="bg-card border border-border">
+        <div className="px-3 py-2 border-b border-border flex items-center justify-between bg-black/20">
+          <h2 className="text-xs font-bold text-text-muted uppercase tracking-widest flex items-center gap-2">
+            <Zap className="w-3 h-3 text-primary" /> Modbus Register Data (Live)
+          </h2>
+          <div className="flex items-center gap-3">
+            {data?.sensor_data && (
+              <>
+                <span className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-sm border ${
+                  isConnected ? 'bg-success/10 text-success border-success/30' : 'bg-critical/10 text-critical border-critical/30'
+                }`}>
+                  {isConnected ? 'RECEIVING' : 'OFFLINE'}
+                </span>
+                {(data.sensor_data as any).register_source && (
+                  <span className="text-[10px] text-primary font-mono">
+                    Addr: {(data.sensor_data as any).register_source}
+                  </span>
+                )}
+                {(data.sensor_data as any).non_zero_registers !== undefined && (
+                  <span className="text-[10px] text-text-muted font-mono">
+                    Non-zero: {(data.sensor_data as any).non_zero_registers}/22
+                  </span>
+                )}
+                {(data.sensor_data as any).float32_reg20_21 !== undefined && (data.sensor_data as any).float32_reg20_21 !== 0 && (
+                  <span className="text-[10px] text-warning font-mono">
+                    F32[20:21]={(data.sensor_data as any).float32_reg20_21}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+        <div className="p-3">
+          {data?.sensor_data?.raw_registers && data.sensor_data.raw_registers.length > 0 ? (
+            <div className="grid grid-cols-11 gap-1">
+              {data.sensor_data.raw_registers.map((val: number, i: number) => (
+                <div key={i} className={`rounded px-1 py-1 text-center ${
+                  val !== 0 ? 'bg-primary/20 border border-primary/40' : 'bg-background/50'
+                }`}>
+                  <div className="text-[8px] text-text-muted">R{i}</div>
+                  <div className={`text-[11px] font-mono ${val !== 0 ? 'text-primary font-bold' : 'text-text-muted'}`}>{val}</div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-xs text-text-muted text-center py-2">
+              {isConnected ? 'Waiting for register data...' : 'No device connected — go to Connection tab to connect'}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   )
 }

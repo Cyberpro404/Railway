@@ -26,11 +26,37 @@ class MLEngine:
         self.model_path = Path(model_path)
         self.model: Optional[RandomForestClassifier] = None
         self.scaler: Optional[StandardScaler] = None
+        # 21 features matching data_receiver.py output keys exactly
         self.feature_names = [
-            'z_rms', 'x_rms', 'z_peak', 'x_peak', 'z_accel', 'x_accel',
-            'z_kurtosis', 'x_kurtosis', 'z_crest_factor', 'x_crest_factor',
-            'temperature', 'z_x_ratio'
+            "z_axis_rms",       # R0
+            "z_rms",            # R1
+            "iso_peak_peak",    # R2
+            "temperature",      # R3
+            "z_true_peak",      # R4
+            "x_rms",            # R5
+            "z_accel",          # R6
+            "x_accel",          # R7
+            "frequency",        # R8
+            "x_frequency",      # R9
+            "z_band_rms",       # R10
+            "x_band_rms",       # R11
+            "kurtosis",         # R12
+            "x_kurtosis",       # R13
+            "crest_factor",     # R14
+            "x_crest_factor",   # R15
+            "z_hf_rms_accel",   # R16
+            "z_peak",           # R17
+            "x_hf_rms_accel",   # R18
+            "x_peak",           # R19
+            "z_x_ratio",        # derived
         ]
+        self.label_names = {
+            0: "Normal",
+            1: "Warning",
+            2: "Critical",
+            3: "BearingFault",
+            4: "Imbalance",
+        }
         self.is_loaded = False
         
     async def load_model(self):
@@ -52,52 +78,88 @@ class MLEngine:
             await self._create_default_model()
     
     async def _create_default_model(self):
-        """Create a default trained model"""
-        # Generate synthetic training data
+        """Create a default trained model using synthetic 5-class data"""
         np.random.seed(42)
-        n_samples = 1000
-        
-        # Normal operation data
-        normal_data = {
-            'z_rms': np.random.normal(0.4, 0.1, n_samples),
-            'x_rms': np.random.normal(0.5, 0.1, n_samples),
-            'z_peak': np.random.normal(0.6, 0.15, n_samples),
-            'x_peak': np.random.normal(0.7, 0.15, n_samples),
-            'z_accel': np.random.normal(0.3, 0.1, n_samples),
-            'x_accel': np.random.normal(0.4, 0.1, n_samples),
-            'temperature': np.random.normal(30, 5, n_samples),
-        }
-        
-        # Anomaly data (expansion gap)
-        anomaly_data = {
-            'z_rms': np.random.normal(0.8, 0.2, n_samples // 4),
-            'x_rms': np.random.normal(0.6, 0.15, n_samples // 4),
-            'z_peak': np.random.normal(1.5, 0.3, n_samples // 4),
-            'x_peak': np.random.normal(1.2, 0.25, n_samples // 4),
-            'z_accel': np.random.normal(0.8, 0.2, n_samples // 4),
-            'x_accel': np.random.normal(0.6, 0.15, n_samples // 4),
-            'temperature': np.random.normal(32, 6, n_samples // 4),
-        }
-        
-        # Calculate features
-        normal_features = self._calculate_features_batch(normal_data)
-        anomaly_features = self._calculate_features_batch(anomaly_data)
-        
-        # Combine and create labels
-        X = np.vstack([normal_features, anomaly_features])
-        y = np.hstack([np.zeros(len(normal_features)), np.ones(len(anomaly_features))])
-        
-        # Train model
+        rng = np.random.default_rng(42)
+
+        def bounded(mean, std, lo, hi, n):
+            return np.clip(rng.normal(mean, std, n), lo, hi)
+
+        n = 300   # samples per class
+        class_cfgs = [
+            # Normal
+            dict(z_rms=(0.8,0.4,0.1,2.7), x_rms=(0.6,0.3,0.1,2.0),
+                 kurtosis=(2.5,0.3,1.0,2.95), crest=(2.4,0.3,1.5,3.4),
+                 temp=(35,5,20,54), z_a=(0.4,0.15,0.05,1.2), x_a=(0.3,0.12,0.05,1.0), freq=(50,5,38,65)),
+            # Warning
+            dict(z_rms=(4.0,1.0,2.8,7.0), x_rms=(2.8,0.7,1.5,5.5),
+                 kurtosis=(3.8,0.5,3.0,4.9), crest=(3.6,0.5,2.5,4.9),
+                 temp=(52,8,35,69), z_a=(1.8,0.5,0.6,3.5), x_a=(1.2,0.4,0.4,2.8), freq=(55,8,38,72)),
+            # Critical
+            dict(z_rms=(10.0,2.5,7.1,18.0), x_rms=(5.5,1.8,2.0,13.0),
+                 kurtosis=(3.0,1.0,1.5,4.9), crest=(3.0,0.8,2.0,4.9),
+                 temp=(76,8,70,95), z_a=(5.0,1.5,2.0,10.0), x_a=(3.0,1.0,1.0,7.0), freq=(60,10,38,85)),
+            # BearingFault
+            dict(z_rms=(4.5,1.2,1.5,9.0), x_rms=(3.2,0.9,1.0,7.0),
+                 kurtosis=(7.5,1.5,5.0,14.0), crest=(6.5,1.5,4.0,12.0),
+                 temp=(57,8,35,73), z_a=(3.2,0.9,1.0,7.0), x_a=(2.2,0.7,0.7,5.0), freq=(53,7,35,72)),
+            # Imbalance
+            dict(z_rms=(5.5,1.2,2.0,9.0), x_rms=(1.5,0.3,0.3,2.4),
+                 kurtosis=(2.8,0.4,1.5,3.9), crest=(3.2,0.5,2.0,4.5),
+                 temp=(46,6,28,62), z_a=(2.8,0.7,1.0,5.0), x_a=(0.9,0.2,0.2,1.7), freq=(48,5,36,62)),
+        ]
+
+        rows, labels = [], []
+        for label, c in enumerate(class_cfgs):
+            z_rms  = bounded(*c["z_rms"], n)
+            x_rms  = bounded(*c["x_rms"], n)
+            kurtosis = bounded(*c["kurtosis"], n)
+            crest  = bounded(*c["crest"], n)
+            temp   = bounded(*c["temp"], n)
+            z_a    = bounded(*c["z_a"], n)
+            x_a    = bounded(*c["x_a"], n)
+            freq   = bounded(*c["freq"], n)
+
+            z_peak = z_rms * rng.uniform(1.2, 2.5, n)
+            x_peak = x_rms * rng.uniform(1.2, 2.5, n)
+            x_freq = freq * rng.uniform(0.88, 1.12, n)
+
+            feat = np.column_stack([
+                z_rms * rng.uniform(0.93, 1.07, n),   # z_axis_rms
+                z_rms,                                  # z_rms
+                z_peak * rng.uniform(1.7, 2.3, n),     # iso_peak_peak
+                temp,                                   # temperature
+                z_peak * rng.uniform(0.88, 1.12, n),   # z_true_peak
+                x_rms,                                  # x_rms
+                z_a,                                    # z_accel
+                x_a,                                    # x_accel
+                freq,                                   # frequency
+                x_freq,                                 # x_frequency
+                z_rms * rng.uniform(0.55, 0.90, n),    # z_band_rms
+                x_rms * rng.uniform(0.55, 0.90, n),    # x_band_rms
+                kurtosis,                               # kurtosis
+                kurtosis * rng.uniform(0.65, 1.35, n), # x_kurtosis
+                crest,                                  # crest_factor
+                crest * rng.uniform(0.65, 1.35, n),    # x_crest_factor
+                z_a * rng.uniform(0.35, 0.70, n),      # z_hf_rms_accel
+                z_peak,                                 # z_peak
+                x_a * rng.uniform(0.35, 0.70, n),      # x_hf_rms_accel
+                x_peak,                                 # x_peak
+                np.where(x_rms > 0, z_rms / x_rms, 0),# z_x_ratio
+            ])
+            rows.append(feat)
+            labels.extend([label] * n)
+
+        X = np.vstack(rows)
+        y = np.array(labels)
+
         self.scaler = StandardScaler()
-        X_scaled = self.scaler.fit_transform(X)
-        
+        X_s = self.scaler.fit_transform(X)
         self.model = RandomForestClassifier(
-            n_estimators=100,
-            max_depth=10,
-            random_state=42,
-            n_jobs=-1
+            n_estimators=100, max_depth=10, class_weight="balanced",
+            random_state=42, n_jobs=-1
         )
-        self.model.fit(X_scaled, y)
+        self.model.fit(X_s, y)
         
         # Save model
         self.model_path.parent.mkdir(parents=True, exist_ok=True)
@@ -121,45 +183,32 @@ class MLEngine:
         return self._calculate_single_features(sensor_data)
     
     def _calculate_single_features(self, data: Dict[str, float]) -> Dict[str, float]:
-        """Calculate features for a single sample"""
-        z_rms = data.get('z_rms', 0.0)
-        x_rms = data.get('x_rms', 0.0)
-        z_peak = data.get('z_peak', 0.0)
-        x_peak = data.get('x_peak', 0.0)
-        z_accel = data.get('z_accel', 0.0)
-        x_accel = data.get('x_accel', 0.0)
-        temp = data.get('temperature', 0.0)
-        
-        # Statistical features (simplified - in production, use rolling window)
-        z_kurtosis = self._estimate_kurtosis(z_rms, z_peak)
-        x_kurtosis = self._estimate_kurtosis(x_rms, x_peak)
-        z_crest_factor = z_peak / z_rms if z_rms > 0 else 0.0
-        x_crest_factor = x_peak / x_rms if x_rms > 0 else 0.0
-        z_x_ratio = z_rms / x_rms if x_rms > 0 else 0.0
-        
+        """Return a feature dict from sensor_data using all 21 feature keys."""
+        z_rms = data.get("z_rms", 0.0)
+        x_rms = data.get("x_rms", 0.0)
         return {
-            'z_rms': z_rms,
-            'x_rms': x_rms,
-            'z_peak': z_peak,
-            'x_peak': x_peak,
-            'z_accel': z_accel,
-            'x_accel': x_accel,
-            'z_kurtosis': z_kurtosis,
-            'x_kurtosis': x_kurtosis,
-            'z_crest_factor': z_crest_factor,
-            'x_crest_factor': x_crest_factor,
-            'temperature': temp,
-            'z_x_ratio': z_x_ratio
+            "z_axis_rms":     data.get("z_axis_rms",     0.0),
+            "z_rms":          z_rms,
+            "iso_peak_peak":  data.get("iso_peak_peak",  0.0),
+            "temperature":    data.get("temperature",    0.0),
+            "z_true_peak":    data.get("z_true_peak",    0.0),
+            "x_rms":          x_rms,
+            "z_accel":        data.get("z_accel",        0.0),
+            "x_accel":        data.get("x_accel",        0.0),
+            "frequency":      data.get("frequency",      0.0),
+            "x_frequency":    data.get("x_frequency",   0.0),
+            "z_band_rms":     data.get("z_band_rms",     0.0),
+            "x_band_rms":     data.get("x_band_rms",     0.0),
+            "kurtosis":       data.get("kurtosis",       0.0),
+            "x_kurtosis":     data.get("x_kurtosis",     0.0),
+            "crest_factor":   data.get("crest_factor",   0.0),
+            "x_crest_factor": data.get("x_crest_factor", 0.0),
+            "z_hf_rms_accel": data.get("z_hf_rms_accel", 0.0),
+            "z_peak":         data.get("z_peak",         0.0),
+            "x_hf_rms_accel": data.get("x_hf_rms_accel", 0.0),
+            "x_peak":         data.get("x_peak",         0.0),
+            "z_x_ratio":      round(z_rms / x_rms, 4) if x_rms > 0 else 0.0,
         }
-    
-    def _estimate_kurtosis(self, rms: float, peak: float) -> float:
-        """Estimate kurtosis from RMS and peak values"""
-        # Simplified kurtosis estimation
-        if rms > 0:
-            ratio = peak / rms
-            # Higher ratio indicates higher kurtosis (more peaked distribution)
-            return max(0.0, (ratio - 1.0) * 2.0)
-        return 0.0
     
     def predict(self, features: Dict[str, float]) -> Optional[Dict[str, Any]]:
         """Make prediction on features"""
@@ -174,22 +223,26 @@ class MLEngine:
             feature_scaled = self.scaler.transform(feature_array)
             
             # Predict
-            prediction = self.model.predict(feature_scaled)[0]
+            prediction = int(self.model.predict(feature_scaled)[0])
             probabilities = self.model.predict_proba(feature_scaled)[0]
+
+            # Map class index to class name (handle models with fewer classes)
+            classes = self.model.classes_
+            prob_dict = {self.label_names.get(int(c), str(c)): float(p)
+                         for c, p in zip(classes, probabilities)}
+
+            class_name = self.label_names.get(prediction, str(prediction))
             
             # Get feature importance
             importances = dict(zip(self.feature_names, self.model.feature_importances_))
             
             return {
-                "class": int(prediction),
-                "class_name": "ANOMALY" if prediction == 1 else "NORMAL",
-                "confidence": float(max(probabilities)),
-                "probabilities": {
-                    "normal": float(probabilities[0]),
-                    "anomaly": float(probabilities[1])
-                },
+                "class":              prediction,
+                "class_name":         class_name,
+                "confidence":         float(max(probabilities)),
+                "probabilities":      prob_dict,
                 "feature_importance": importances,
-                "timestamp": datetime.now(timezone.utc).isoformat()
+                "timestamp":          datetime.now(timezone.utc).isoformat()
             }
         except Exception as e:
             logger.error(f"Prediction error: {e}")

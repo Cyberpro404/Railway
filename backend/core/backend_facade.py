@@ -29,7 +29,7 @@ class BackendFacade:
     async def scan_network(self, subnet: str = "192.168.0") -> List[str]:
         return await self.connection_manager.scan_network(subnet)
 
-    async def scan_ports(self) -> List[str]:
+    async def scan_ports(self) -> list:
         return await self.connection_manager.scan_ports()
 
     async def connect_device(

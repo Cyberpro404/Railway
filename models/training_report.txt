@@ -1,0 +1,57 @@
+Railway Vibration Health Monitor – Training Report
+============================================================
+Trained at : 2026-04-01T04:26:41.778016+00:00
+
+Dataset summary
+  Total samples : 2,628  (1,432 REAL  /  1,196 synthetic)
+  Class 0  Normal      :   400  [0 real / 400 synth]
+  Class 1  Warning     :   931  [931 real / 0 synth]
+  Class 2  Critical    :   400  [4 real / 396 synth]
+  Class 3  BearingFault:   497  [497 real / 0 synth]
+  Class 4  Imbalance   :   400  [0 real / 400 synth]
+
+Test accuracy : 99.8%
+CV 5-fold     : 100.0% ± 0.1%
+
+Classification report:
+              precision    recall  f1-score   support
+
+      Normal       0.99      1.00      0.99        80
+     Warning       1.00      1.00      1.00       186
+    Critical       1.00      1.00      1.00        80
+BearingFault       1.00      1.00      1.00       100
+   Imbalance       1.00      0.99      0.99        80
+
+    accuracy                           1.00       526
+   macro avg       1.00      1.00      1.00       526
+weighted avg       1.00      1.00      1.00       526
+
+Confusion matrix:
+[[ 80   0   0   0   0]
+ [  0 186   0   0   0]
+ [  0   0  80   0   0]
+ [  0   0   0 100   0]
+ [  1   0   0   0  79]]
+
+Feature importances (all):
+  kurtosis              : 0.131714
+  z_true_peak           : 0.099519
+  temperature           : 0.082387
+  z_band_rms            : 0.077186
+  z_axis_rms            : 0.076644
+  iso_peak_peak         : 0.074366
+  crest_factor          : 0.056796
+  x_band_rms            : 0.052679
+  x_accel               : 0.052569
+  x_kurtosis            : 0.044724
+  x_hf_rms_accel        : 0.044013
+  z_hf_rms_accel        : 0.043655
+  z_rms                 : 0.038695
+  x_rms                 : 0.035394
+  x_peak                : 0.023968
+  z_peak                : 0.021880
+  z_accel               : 0.017815
+  x_crest_factor        : 0.017279
+  z_x_ratio             : 0.005714
+  frequency             : 0.002255
+  x_frequency           : 0.000748

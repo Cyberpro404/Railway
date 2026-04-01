@@ -1,0 +1,23 @@
+[
+  "z_axis_rms",
+  "z_rms",
+  "iso_peak_peak",
+  "temperature",
+  "z_true_peak",
+  "x_rms",
+  "z_accel",
+  "x_accel",
+  "frequency",
+  "x_frequency",
+  "z_band_rms",
+  "x_band_rms",
+  "kurtosis",
+  "x_kurtosis",
+  "crest_factor",
+  "x_crest_factor",
+  "z_hf_rms_accel",
+  "z_peak",
+  "x_hf_rms_accel",
+  "x_peak",
+  "z_x_ratio"
+]

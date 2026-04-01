@@ -230,7 +230,7 @@ class ConnectionManager:
             self._transition(ConnectionState.IDLE, "Ready")
         return devices
 
-    async def scan_ports(self) -> List[str]:
+    async def scan_ports(self) -> list:
         self._transition(ConnectionState.SCANNING, "Scanning serial ports")
         ports = await self.scanner.scan_serial_ports()
         if self.is_connected():

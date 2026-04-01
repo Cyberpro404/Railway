@@ -19,7 +19,7 @@ export default function AlertsEnhanced() {
   const fetchAlerts = async () => {
     try {
       setLoading(true)
-      const response = await fetch('http://localhost:8000/api/v1/alerts/active')
+      const response = await fetch('/api/v1/alerts/active')
       if (response.ok) {
         const data = await response.json()
         setAlerts(data.alerts || [])
@@ -33,7 +33,7 @@ export default function AlertsEnhanced() {
 
   const clearAllAlerts = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/v1/alerts/clear', {
+      const response = await fetch('/api/v1/alerts/clear', {
         method: 'POST'
       })
       if (response.ok) {

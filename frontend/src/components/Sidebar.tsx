@@ -24,9 +24,7 @@ const tabs = [
   { path: '/history', label: 'Historical Data', icon: Clock, color: 'text-primary', description: 'Trends & playback' },
   { path: '/alerts', label: 'Alerts & Events', icon: AlertTriangle, color: 'text-critical', description: 'Notifications' },
   { path: '/reports', label: 'Reports', icon: FileText, color: 'text-primary', description: 'Downloads' },
-  { path: '/connection', label: 'Connections', icon: Wifi, color: 'text-success', description: 'DXM Management' },
-  { path: '/devices', label: 'Device Management', icon: Search, color: 'text-primary', description: 'Network scan & connect' },
-  { path: '/system', label: 'System Status', icon: Server, color: 'text-primary', description: 'Health & edge node' },
+  { path: '/devices', label: 'Connection Management', icon: Wifi, color: 'text-success', description: 'Manage DXMs & Network' },
   { path: '/settings', label: 'Configuration', icon: Settings, color: 'text-text-muted', description: 'Admin calibration' },
 ]
 
@@ -166,3 +164,4 @@ export default function Sidebar() {
     </aside>
   )
 }
+

@@ -1,600 +1,421 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  Wifi, WifiOff, Search, Play, Pause, Plus, Trash2, 
-  Settings, Activity, CheckCircle, XCircle, AlertTriangle,
-  Network, HardDrive, Cpu, Clock, Zap
-} from 'lucide-react';
+﻿import React, { useState, useEffect } from 'react';
+import { Activity, Wifi, Server, Search, RefreshCw, LogOut } from 'lucide-react';
+import { wsClient, WebSocketData } from '../lib/websocket';
 
-interface NetworkDevice {
-  ip: string;
-  mac: string;
-  hostname?: string;
-  vendor?: string;
-  open_ports: number[];
-  device_type: string;
-  confidence: number;
-  response_time_ms: number;
-  last_seen: string;
+const COLORS = {
+  bg: '#0a0f1a',
+  bgPanel: '#1e293b',
+  border: '#334155',
+  text: '#e2e8f0',
+  textMuted: '#94a3b8',
+  primary: '#3b82f6',
+  success: '#10b981',
+  warning: '#f59e0b',
+  critical: '#ef4444'
 }
 
-interface ModbusDevice {
-  ip: string;
-  port: number;
-  slave_id: number;
-  device_id?: string;
-  firmware_version?: string;
-  serial_number?: string;
-  model?: string;
-  vendor?: string;
-  is_dxm: boolean;
-  confidence: number;
-  response_time_ms: number;
-  registers: Record<number, any>;
-}
+export default function DeviceManagementTab() {
+  const [connectionType, setConnectionType] = useState<'serial' | 'tcp'>('tcp');
+  
+  // TCP State
+  const [subnet, setSubnet] = useState('192.168.0');
+  const [ipAddress, setIpAddress] = useState('192.168.0.1');
+  const [useVpn, setUseVpn] = useState(false);
+  const [tcpDevices, setTcpDevices] = useState<any[]>([]);
+  
+  // Serial State
+  const [comPort, setComPort] = useState('');
+  const [baudRate, setBaudRate] = useState('19200');
+  const [serialDevices, setSerialDevices] = useState<any[]>([]);
 
-interface ConnectedDevice {
-  device_id: string;
-  status: any;
-  registers: Record<number, any>;
-  last_updated: string;
-}
-
-interface NetworkInterface {
-  name: string;
-  addresses: Array<{
-    family: string;
-    address: string;
-    netmask?: string;
-    broadcast?: string;
-  }>;
-  stats?: {
-    isup: boolean;
-    duplex: number;
-    speed: number;
-    mtu: number;
-  };
-}
-
-const DeviceManagementTab: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'scan' | 'connected' | 'interfaces'>('scan');
-  const [scanning, setScanning] = useState(false);
-  const [scanResults, setScanResults] = useState<{
-    network_devices: NetworkDevice[];
-    modbus_devices: ModbusDevice[];
-  }>({ network_devices: [], modbus_devices: [] });
-  const [connectedDevices, setConnectedDevices] = useState<ConnectedDevice[]>([]);
-  const [networkInterfaces, setNetworkInterfaces] = useState<NetworkInterface[]>([]);
-  const [networkRanges, setNetworkRanges] = useState<string[]>([]);
-  const [selectedRange, setSelectedRange] = useState('192.168.1.0/24');
-  const [scanType, setScanType] = useState<'quick' | 'full' | 'modbus_only'>('quick');
-  const [activeScanId, setActiveScanId] = useState<string | null>(null);
-  const [scanProgress, setScanProgress] = useState(0);
-
+  // Global State
+  const [isScanning, setIsScanning] = useState(false);
+  const [isConnecting, setIsConnecting] = useState(false);
+  const [connectedState, setConnectedState] = useState(false);
+  const [statusMsg, setStatusMsg] = useState('Not Connected');
+  
+  // Fetch initial connection status from WS
   useEffect(() => {
-    fetchNetworkInterfaces();
-    fetchNetworkRanges();
-    fetchConnectedDevices();
+    const handleData = (newData: WebSocketData) => {
+      if (newData.connection_status) {
+        setConnectedState(newData.connection_status.connected);
+        if (newData.connection_status.connected) {
+          setStatusMsg(`Connected via ${newData.connection_status.port || 'TCP'} to ${newData.connection_status.port || 'Device'}`);
+        } else {
+          setStatusMsg('Not Connected');
+        }
+      }
+    };
+    const unsubscribe = wsClient.subscribe(handleData);
     
-    // Auto-refresh connected devices
-    const interval = setInterval(fetchConnectedDevices, 5000);
-    return () => clearInterval(interval);
+    // Also do a manual fetch from backend API
+    fetch('/api/v1/connection/status')
+      .then(res => res.json())
+      .then(data => {
+        setConnectedState(data.connected);
+        if(data.connected) setStatusMsg(`Connected via ${data.type}`);
+      })
+      .catch(err => console.error("Error fetching status", err));
+      
+    return () => unsubscribe();
   }, []);
 
-  const fetchNetworkInterfaces = async () => {
+  const handleScanTcp = async () => {
+    setIsScanning(true);
+    setStatusMsg(`Scanning subnet ${subnet}.x...`);
+    setTcpDevices([]);
     try {
-      const response = await fetch('/api/v1/devices/interfaces');
-      const data = await response.json();
-      setNetworkInterfaces(data.interfaces || []);
-    } catch (error) {
-      console.error('Error fetching network interfaces:', error);
-    }
-  };
-
-  const fetchNetworkRanges = async () => {
-    try {
-      const response = await fetch('/api/v1/devices/network/ranges');
-      const data = await response.json();
-      setNetworkRanges(data.network_ranges || []);
-      if (data.network_ranges?.length > 0) {
-        setSelectedRange(data.network_ranges[0]);
-      }
-    } catch (error) {
-      console.error('Error fetching network ranges:', error);
-    }
-  };
-
-  const fetchConnectedDevices = async () => {
-    try {
-      const response = await fetch('/api/v1/devices/connected');
-      const data = await response.json();
-      setConnectedDevices(data.connected_devices || []);
-    } catch (error) {
-      console.error('Error fetching connected devices:', error);
-    }
-  };
-
-  const startScan = async () => {
-    setScanning(true);
-    setScanProgress(0);
-    
-    try {
-      const response = await fetch('/api/v1/devices/scan/network', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          network_range: selectedRange,
-          scan_type: scanType,
-          timeout: 2.0
-        })
+      const response = await fetch(`/api/v1/connection/scan-network?subnet=${encodeURIComponent(subnet)}`, {
+        method: 'POST'
       });
-      
-      const data = await response.json();
-      setActiveScanId(data.scan_id);
-      
-      // Poll for scan results
-      const pollInterval = setInterval(async () => {
-        try {
-          const statusResponse = await fetch(`/api/v1/devices/scan/${data.scan_id}`);
-          const statusData = await statusResponse.json();
-          
-          setScanProgress(statusData.status === 'completed' ? 100 : 50);
-          
-          if (statusData.status === 'completed' || statusData.status === 'failed') {
-            clearInterval(pollInterval);
-            setScanning(false);
-            setActiveScanId(null);
-            
-            if (statusData.status === 'completed') {
-              setScanResults({
-                network_devices: statusData.network_devices || [],
-                modbus_devices: statusData.modbus_devices || []
-              });
-            }
-          }
-        } catch (error) {
-          console.error('Error polling scan status:', error);
-          clearInterval(pollInterval);
-          setScanning(false);
-        }
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Error starting scan:', error);
-      setScanning(false);
-    }
-  };
-
-  const connectToDevice = async (device: ModbusDevice) => {
-    try {
-      const response = await fetch('/api/v1/devices/connect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          ip: device.ip,
-          port: device.port,
-          slave_id: device.slave_id,
-          connection_type: 'tcp'
-        })
-      });
-      
-      const result = await response.json();
-      
-      if (result.status === 'connected') {
-        await fetchConnectedDevices();
-        alert(`Successfully connected to ${result.device_id}`);
-      } else {
-        alert(`Failed to connect: ${result.error_message}`);
-      }
-    } catch (error) {
-      console.error('Error connecting to device:', error);
-      alert('Error connecting to device');
-    }
-  };
-
-  const disconnectDevice = async (deviceId: string) => {
-    try {
-      const response = await fetch(`/api/v1/devices/disconnect/${deviceId}`, {
-        method: 'DELETE'
-      });
-      
       if (response.ok) {
-        await fetchConnectedDevices();
-        alert(`Device ${deviceId} disconnected`);
+        const data = await response.json();
+        const formattedDevices = (data.devices || []).map((ip: string) => ({
+          ip,
+          mac: 'Unknown',
+          model: 'DXM',
+          serial: 'Unknown',
+          fw: 'Unknown'
+        }));
+        setTcpDevices(formattedDevices);
+        setStatusMsg(`Found ${formattedDevices.length} devices on network.`);
       } else {
-        alert('Failed to disconnect device');
+        setStatusMsg('Network scan failed (Server Error).');
       }
-    } catch (error) {
-      console.error('Error disconnecting device:', error);
-      alert('Error disconnecting device');
+    } catch (err) {
+      console.error(err);
+      setStatusMsg('Network scan failed.');
     }
+    setIsScanning(false);
+  };
+  
+  const handleScanSerial = async () => {
+    setIsScanning(true);
+    setStatusMsg(`Scanning COM Ports...`);
+    setSerialDevices([]);
+    try {
+      const response = await fetch('/api/v1/connection/scan', { method: 'POST' });
+      if (response.ok) {
+        const data = await response.json();
+        setSerialDevices(data.ports || []);
+        setStatusMsg(`Found ${(data.ports || []).length} serial ports.`);
+        if (data.ports && data.ports.length > 0) {
+          setComPort(data.ports[0].device);
+        }
+      } else {
+        setStatusMsg('Serial scan failed (Server error).');
+      }
+    } catch (err) {
+      console.error(err);
+      setStatusMsg('Serial scan failed.');
+    }
+    setIsScanning(false);
   };
 
-  const testDevice = async (deviceId: string, testType: string = 'connectivity') => {
+  const handleConnectTcp = async () => {
+    setIsConnecting(true);
+    setStatusMsg(`Connecting to TCP/IP ${ipAddress}...`);
     try {
-      const response = await fetch(`/api/v1/devices/test/${deviceId}`, {
+      const response = await fetch('/api/v1/connection/connect', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ test_type: testType })
+        body: JSON.stringify({
+          protocol: 'TCP',
+          host: ipAddress,
+          port: 502,
+          slave_id: 1,
+          timeout: 2.5
+        })
       });
-      
-      const result = await response.json();
-      
-      if (result.status === 'completed') {
-        alert(`Test completed: ${JSON.stringify(result.results, null, 2)}`);
+      if (response.ok) {
+        setConnectedState(true);
+        setStatusMsg(`Connected to ${ipAddress}`);
       } else {
-        alert(`Test failed: ${result.error_message}`);
+        setStatusMsg('TCP Connection Failed');
       }
     } catch (error) {
-      console.error('Error testing device:', error);
-      alert('Error testing device');
+      setStatusMsg('TCP Connection Error');
     }
+    setIsConnecting(false);
   };
 
-  const getDeviceIcon = (deviceType: string) => {
-    switch (deviceType) {
-      case 'DXM Controller':
-      case 'Modbus Device':
-        return <Settings className="w-5 h-5" />;
-      case 'Network Infrastructure':
-        return <Network className="w-5 h-5" />;
-      case 'Server':
-        return <HardDrive className="w-5 h-5" />;
-      default:
-        return <Cpu className="w-5 h-5" />;
+  const handleConnectSerial = async () => {
+    setIsConnecting(true);
+    setStatusMsg(`Connecting to Serial ${comPort}...`);
+    try {
+      const response = await fetch('/api/v1/connection/connect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          protocol: 'RTU',
+          port: comPort,
+          baudrate: parseInt(baudRate),
+          slave_id: 1,
+          timeout: 2.5
+        })
+      });
+      if (response.ok) {
+        setConnectedState(true);
+        setStatusMsg(`Connected to ${comPort}`);
+      } else {
+        setStatusMsg('Serial Connection Failed');
+      }
+    } catch (error) {
+      setStatusMsg('Serial Connection Error');
     }
+    setIsConnecting(false);
   };
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'connected':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'disconnected':
-      case 'failed':
-        return <XCircle className="w-5 h-5 text-red-500" />;
-      case 'connecting':
-        return <Activity className="w-5 h-5 text-yellow-500" />;
-      default:
-        return <AlertTriangle className="w-5 h-5 text-gray-500" />;
+  const handleDisconnect = async () => {
+    try {
+      await fetch('/api/v1/connection/disconnect', { method: 'POST' });
+      setConnectedState(false);
+      setStatusMsg('Not Connected');
+    } catch(err) {
+      console.error(err);
     }
-  };
-
-  const getConfidenceColor = (confidence: number) => {
-    if (confidence >= 0.8) return 'text-green-500';
-    if (confidence >= 0.6) return 'text-yellow-500';
-    return 'text-red-500';
   };
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gray-800 rounded-lg p-6 border border-gray-700">
-        <h2 className="text-xl font-semibold text-white mb-4">Device Management</h2>
+    <div className="p-6 h-full flex flex-col gap-6" style={{ backgroundColor: COLORS.bg, color: COLORS.text }}>
+      <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
+        <Server className="w-6 h-6" style={{ color: COLORS.primary }} />
+        Connection Management
+      </h1>
+
+      <div className="p-6 rounded-lg border flex flex-col gap-6 w-full max-w-4xl shadow-lg" style={{ backgroundColor: COLORS.bgPanel, borderColor: COLORS.border, color: COLORS.text }}>
         
-        {/* Tab Navigation */}
-        <div className="flex space-x-1 mb-6 bg-gray-900 rounded-lg p-1">
-          <button
-            onClick={() => setActiveTab('scan')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-              activeTab === 'scan' 
-                ? 'bg-blue-600 text-white' 
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <Search className="w-4 h-4" />
-            <span>Network Scan</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('connected')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-              activeTab === 'connected' 
-                ? 'bg-blue-600 text-white' 
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <Wifi className="w-4 h-4" />
-            <span>Connected Devices</span>
-          </button>
-          <button
-            onClick={() => setActiveTab('interfaces')}
-            className={`flex items-center space-x-2 px-4 py-2 rounded-md transition-colors ${
-              activeTab === 'interfaces' 
-                ? 'bg-blue-600 text-white' 
-                : 'text-gray-400 hover:text-white'
-            }`}
-          >
-            <Network className="w-4 h-4" />
-            <span>Network Interfaces</span>
-          </button>
+        {/* Radio Selection */}
+        <div className="flex items-center gap-6 text-lg font-semibold border-b pb-4" style={{ borderColor: COLORS.border }}>
+          <span style={{ color: COLORS.textMuted }}>Connect to DXM using:</span>
+          <label className="flex items-center gap-2 cursor-pointer font-normal hover:text-white transition-colors">
+            <input 
+              type="radio" 
+              name="connType" 
+              value="serial" 
+              checked={connectionType === 'serial'} 
+              onChange={() => setConnectionType('serial')}
+              className="w-4 h-4 cursor-pointer accent-blue-500"
+            />
+            Serial
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer font-normal hover:text-white transition-colors">
+            <input 
+              type="radio" 
+              name="connType" 
+              value="tcp" 
+              checked={connectionType === 'tcp'} 
+              onChange={() => setConnectionType('tcp')}
+              className="w-4 h-4 cursor-pointer accent-blue-500"
+            />
+            TCP/IP
+          </label>
         </div>
 
-        {/* Network Scan Tab */}
-        {activeTab === 'scan' && (
-          <div className="space-y-6">
-            {/* Scan Configuration */}
-            <div className="bg-gray-900 rounded-lg p-4">
-              <h3 className="text-lg font-medium text-white mb-4">Scan Configuration</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-gray-400 text-sm mb-1">Network Range</label>
-                  <select
-                    value={selectedRange}
-                    onChange={(e) => setSelectedRange(e.target.value)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  >
-                    {networkRanges.map(range => (
-                      <option key={range} value={range}>{range}</option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-gray-400 text-sm mb-1">Scan Type</label>
-                  <select
-                    value={scanType}
-                    onChange={(e) => setScanType(e.target.value as any)}
-                    className="w-full px-3 py-2 bg-gray-800 border border-gray-700 rounded-lg text-white focus:outline-none focus:border-blue-500"
-                  >
-                    <option value="quick">Quick Scan</option>
-                    <option value="full">Full Scan</option>
-                    <option value="modbus_only">Modbus Only</option>
-                  </select>
-                </div>
-                <div className="flex items-end">
-                  <button
-                    onClick={startScan}
-                    disabled={scanning}
-                    className="w-full flex items-center justify-center space-x-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
-                  >
-                    {scanning ? (
-                      <>
-                        <Activity className="w-4 h-4 animate-spin" />
-                        <span>Scanning...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Search className="w-4 h-4" />
-                        <span>Start Scan</span>
-                      </>
-                    )}
-                  </button>
-                </div>
+        {connectionType === 'tcp' ? (
+          <>
+            {/* TCP SCANNING CONTROLS */}
+            <div className="flex items-center gap-4 mt-2">
+              <span className="w-32 text-right" style={{ color: COLORS.textMuted }}>Subnet to Scan:</span>
+              <div className="flex items-center">
+                <input 
+                  type="text" 
+                  value={subnet} 
+                  onChange={(e) => setSubnet(e.target.value)}
+                  className="border rounded px-3 py-1.5 flex-1 outline-none w-48 text-white focus:border-blue-500 transition-colors"
+                  style={{ backgroundColor: COLORS.bg, borderColor: COLORS.border }}
+                />
               </div>
-              
-              {scanning && (
-                <div className="mt-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-400">Scan Progress</span>
-                    <span className="text-sm text-gray-400">{scanProgress}%</span>
-                  </div>
-                  <div className="w-full bg-gray-700 rounded-full h-2">
-                    <div 
-                      className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                      style={{ width: `${scanProgress}%` }}
-                    ></div>
-                  </div>
-                </div>
-              )}
+              <button 
+                onClick={handleScanTcp}
+                disabled={isScanning}
+                className="border rounded p-1.5 transition-colors disabled:opacity-50 shadow-sm hover:bg-slate-700"
+                style={{ backgroundColor: COLORS.bg, borderColor: COLORS.border }}
+                title="Refresh"
+              >
+                <RefreshCw className={`w-5 h-5 ${isScanning ? 'animate-spin' : ''}`} style={{ color: COLORS.primary }} />
+              </button>
+              <button 
+                onClick={handleScanTcp}
+                disabled={isScanning}
+                className="border rounded px-4 py-1.5 focus:outline-none transition-colors disabled:opacity-50 shadow-sm hover:bg-slate-700"
+                style={{ backgroundColor: COLORS.bg, borderColor: COLORS.border, color: COLORS.text }}
+              >
+                Scan Network for DXMs
+              </button>
             </div>
 
-            {/* Scan Results */}
-            {(scanResults.network_devices.length > 0 || scanResults.modbus_devices.length > 0) && (
-              <div className="space-y-6">
-                {/* Modbus Devices */}
-                {scanResults.modbus_devices.length > 0 && (
-                  <div className="bg-gray-900 rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-white mb-4">
-                      Modbus Devices ({scanResults.modbus_devices.length})
-                    </h3>
-                    <div className="space-y-3">
-                      {scanResults.modbus_devices.map((device, index) => (
-                        <div key={index} className="bg-gray-800 rounded-lg p-4 border border-gray-700">
-                          <div className="flex items-start justify-between">
-                            <div className="flex items-center space-x-3">
-                              <div className="mt-1 text-blue-500">
-                                {getDeviceIcon(device.is_dxm ? 'DXM Controller' : 'Modbus Device')}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center space-x-2 mb-1">
-                                  <h4 className="text-white font-medium">
-                                    {device.device_id || `Device ${device.slave_id}`}
-                                  </h4>
-                                  {device.is_dxm && (
-                                    <span className="px-2 py-1 bg-green-900 text-green-300 text-xs rounded">
-                                      DXM
-                                    </span>
-                                  )}
-                                  <span className={`text-sm ${getConfidenceColor(device.confidence)}`}>
-                                    {(device.confidence * 100).toFixed(0)}% confidence
-                                  </span>
-                                </div>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm text-gray-400">
-                                  <div>IP: {device.ip}:{device.port}</div>
-                                  <div>Slave ID: {device.slave_id}</div>
-                                  <div>Response: {device.response_time_ms.toFixed(1)}ms</div>
-                                  {device.firmware_version && (
-                                    <div>Firmware: {device.firmware_version}</div>
-                                  )}
-                                </div>
-                                {device.registers && Object.keys(device.registers).length > 0 && (
-                                  <div className="mt-2">
-                                    <span className="text-xs text-gray-400">Registers: </span>
-                                    <span className="text-xs text-white">
-                                      {Object.keys(device.registers).slice(0, 5).join(', ')}
-                                      {Object.keys(device.registers).length > 5 && '...'}
-                                    </span>
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => connectToDevice(device)}
-                                className="px-3 py-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors text-sm"
-                              >
-                                Connect
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Other Network Devices */}
-                {scanResults.network_devices.length > 0 && (
-                  <div className="bg-gray-900 rounded-lg p-4">
-                    <h3 className="text-lg font-medium text-white mb-4">
-                      Other Network Devices ({scanResults.network_devices.length})
-                    </h3>
-                    <div className="space-y-2">
-                      {scanResults.network_devices.map((device, index) => (
-                        <div key={index} className="bg-gray-800 rounded-lg p-3 border border-gray-700">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-3">
-                              <div className="text-gray-500">
-                                {getDeviceIcon(device.device_type)}
-                              </div>
-                              <div>
-                                <div className="text-white font-medium">{device.hostname || device.ip}</div>
-                                <div className="text-sm text-gray-400">
-                                  {device.ip} • {device.device_type} • {device.open_ports.length} ports
-                                </div>
-                              </div>
-                            </div>
-                            <div className={`text-sm ${getConfidenceColor(device.confidence)}`}>
-                              {(device.confidence * 100).toFixed(0)}%
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Connected Devices Tab */}
-        {activeTab === 'connected' && (
-          <div className="space-y-4">
-            {connectedDevices.length > 0 ? (
-              connectedDevices.map((device, index) => (
-                <div key={index} className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3">
-                      <div className="mt-1">
-                        {getStatusIcon(device.status?.state || 'unknown')}
-                      </div>
-                      <div className="flex-1">
-                        <h4 className="text-white font-medium mb-1">{device.device_id}</h4>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-sm text-gray-400">
-                          <div>Status: {device.status?.state || 'Unknown'}</div>
-                          <div>Last Updated: {new Date(device.last_updated).toLocaleString()}</div>
-                          <div>Registers: {Object.keys(device.registers).length}</div>
-                        </div>
-                        {device.registers && Object.keys(device.registers).length > 0 && (
-                          <div className="mt-3 p-3 bg-gray-800 rounded">
-                            <div className="text-xs text-gray-400 mb-2">Recent Register Values:</div>
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                              {Object.entries(device.registers).slice(0, 8).map(([addr, value]) => (
-                                <div key={addr} className="text-xs">
-                                  <span className="text-gray-400">{addr}:</span>
-                                  <span className="text-white ml-1">{value}</span>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => testDevice(device.device_id, 'connectivity')}
-                        className="px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors text-sm"
-                      >
-                        Test
-                      </button>
-                      <button
-                        onClick={() => testDevice(device.device_id, 'registers')}
-                        className="px-3 py-1 bg-yellow-600 text-white rounded hover:bg-yellow-700 transition-colors text-sm"
-                      >
-                        Registers
-                      </button>
-                      <button
-                        onClick={() => disconnectDevice(device.device_id)}
-                        className="px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-sm"
-                      >
-                        Disconnect
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              ))
-            ) : (
-              <div className="bg-gray-900 rounded-lg p-12 border border-gray-700 text-center">
-                <WifiOff className="w-16 h-16 text-gray-500 mx-auto mb-4" />
-                <p className="text-gray-400 text-lg">No connected devices</p>
-                <p className="text-gray-500 text-sm mt-2">Scan for devices and connect to start monitoring</p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Network Interfaces Tab */}
-        {activeTab === 'interfaces' && (
-          <div className="space-y-4">
-            {networkInterfaces.map((iface, index) => (
-              <div key={index} className="bg-gray-900 rounded-lg p-4 border border-gray-700">
-                <div className="flex items-center justify-between mb-3">
-                  <h4 className="text-white font-medium">{iface.name}</h4>
-                  {iface.stats?.isup ? (
-                    <span className="px-2 py-1 bg-green-900 text-green-300 text-xs rounded">Active</span>
-                  ) : (
-                    <span className="px-2 py-1 bg-red-900 text-red-300 text-xs rounded">Inactive</span>
+            {/* TCP DEVICES TABLE */}
+            <div className="border rounded-md min-h-[160px] overflow-hidden shadow-inner mt-4" style={{ borderColor: COLORS.border, backgroundColor: COLORS.bg }}>
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b" style={{ backgroundColor: COLORS.bgPanel, borderColor: COLORS.border }}>
+                    <th className="p-3 border-r font-medium" style={{ borderColor: COLORS.border, color: COLORS.textMuted }}>IP</th>
+                    <th className="p-3 border-r font-medium" style={{ borderColor: COLORS.border, color: COLORS.textMuted }}>MAC</th>
+                    <th className="p-3 border-r font-medium" style={{ borderColor: COLORS.border, color: COLORS.textMuted }}>Model</th>
+                    <th className="p-3 border-r font-medium" style={{ borderColor: COLORS.border, color: COLORS.textMuted }}>Serial Number</th>
+                    <th className="p-3 font-medium" style={{ color: COLORS.textMuted }}>FW Version</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tcpDevices.map((dev, i) => (
+                    <tr key={i} className="hover:bg-slate-800 cursor-pointer border-b transition-colors" style={{ borderColor: COLORS.border }} onClick={() => setIpAddress(dev.ip)}>
+                      <td className="p-3 border-r" style={{ borderColor: COLORS.border }}>{dev.ip}</td>
+                      <td className="p-3 border-r" style={{ borderColor: COLORS.border }}>{dev.mac}</td>
+                      <td className="p-3 border-r" style={{ borderColor: COLORS.border }}>{dev.model}</td>
+                      <td className="p-3 border-r" style={{ borderColor: COLORS.border }}>{dev.serial}</td>
+                      <td className="p-3">{dev.fw}</td>
+                    </tr>
+                  ))}
+                  {tcpDevices.length === 0 && !isScanning && (
+                    <tr>
+                      <td colSpan={5} className="p-6 text-center italic" style={{ color: COLORS.textMuted }}>
+                        No devices found or scanning not started.
+                      </td>
+                    </tr>
                   )}
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <h5 className="text-sm text-gray-400 mb-2">Addresses</h5>
-                    <div className="space-y-1">
-                      {iface.addresses.map((addr, addrIndex) => (
-                        <div key={addrIndex} className="text-sm">
-                          <span className="text-gray-400">{addr.family}:</span>
-                          <span className="text-white ml-2">{addr.address}</span>
-                          {addr.netmask && <span className="text-gray-500 ml-2">/{addr.netmask}</span>}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  
-                  {iface.stats && (
-                    <div>
-                      <h5 className="text-sm text-gray-400 mb-2">Statistics</h5>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>
-                          <span className="text-gray-400">Speed:</span>
-                          <span className="text-white ml-2">{iface.stats.speed} Mbps</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">Duplex:</span>
-                          <span className="text-white ml-2">{iface.stats.duplex}</span>
-                        </div>
-                        <div>
-                          <span className="text-gray-400">MTU:</span>
-                          <span className="text-white ml-2">{iface.stats.mtu}</span>
-                        </div>
-                      </div>
-                    </div>
+                </tbody>
+              </table>
+            </div>
+
+            {/* TCP CONNECTION ACTIONS */}
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <span className="w-24 text-right" style={{ color: COLORS.textMuted }}>IP Address</span>
+              <input 
+                type="text" 
+                value={ipAddress} 
+                onChange={(e) => setIpAddress(e.target.value)}
+                className="border rounded px-3 py-1.5 w-48 outline-none shadow-inner text-white focus:border-blue-500 transition-colors"
+                style={{ backgroundColor: COLORS.bg, borderColor: COLORS.border }}
+              />
+              <label className="flex items-center gap-2 cursor-pointer ml-4">
+                <input 
+                  type="checkbox" 
+                  checked={useVpn} 
+                  onChange={(e) => setUseVpn(e.target.checked)}
+                  className="w-4 h-4 cursor-pointer accent-blue-500"
+                />
+                VPN
+              </label>
+              
+              {!connectedState ? (
+                <button 
+                  onClick={handleConnectTcp}
+                  disabled={isConnecting}
+                  className="ml-4 border rounded px-8 py-1.5 shadow-sm focus:outline-none transition-colors disabled:opacity-50 hover:bg-blue-600 font-medium"
+                  style={{ backgroundColor: COLORS.primary, borderColor: COLORS.primary, color: 'white' }}
+                >
+                  {isConnecting ? 'Connecting...' : 'Connect'}
+                </button>
+              ) : (
+                <button 
+                  onClick={handleDisconnect}
+                  className="ml-4 border rounded px-6 py-1.5 shadow-sm focus:outline-none transition-colors hover:bg-red-600 font-medium"
+                  style={{ backgroundColor: COLORS.critical, borderColor: COLORS.critical, color: 'white' }}
+                >
+                  Disconnect
+                </button>
+              )}
+            </div>
+          </>
+        ) : (
+          <>
+            {/* SERIAL SCANNING CONTROLS */}
+            <div className="flex items-center gap-4 mt-2">
+              <button 
+                onClick={handleScanSerial}
+                disabled={isScanning}
+                className="border rounded px-4 py-1.5 focus:outline-none transition-colors disabled:opacity-50 shadow-sm hover:bg-slate-700 flex items-center gap-2"
+                style={{ backgroundColor: COLORS.bg, borderColor: COLORS.border, color: COLORS.text }}
+              >
+                <RefreshCw className={`w-4 h-4 ${isScanning ? 'animate-spin' : ''}`} style={{ color: COLORS.primary }} />
+                Scan Ports for DXMs
+              </button>
+            </div>
+
+            {/* SERIAL DEVICES TABLE */}
+            <div className="border rounded-md min-h-[160px] overflow-hidden shadow-inner mt-4" style={{ borderColor: COLORS.border, backgroundColor: COLORS.bg }}>
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b" style={{ backgroundColor: COLORS.bgPanel, borderColor: COLORS.border }}>
+                    <th className="p-3 border-r font-medium" style={{ borderColor: COLORS.border, color: COLORS.textMuted }}>Port</th>
+                    <th className="p-3 border-r font-medium" style={{ borderColor: COLORS.border, color: COLORS.textMuted }}>Description</th>
+                    <th className="p-3 font-medium" style={{ color: COLORS.textMuted }}>HWID</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {serialDevices.map((dev, i) => (
+                    <tr key={i} className="hover:bg-slate-800 cursor-pointer border-b transition-colors" style={{ borderColor: COLORS.border }} onClick={() => setComPort(dev.device)}>
+                      <td className="p-3 border-r" style={{ borderColor: COLORS.border }}>{dev.device}</td>
+                      <td className="p-3 border-r" style={{ borderColor: COLORS.border }}>{dev.description}</td>
+                      <td className="p-3">{dev.hwid}</td>
+                    </tr>
+                  ))}
+                  {serialDevices.length === 0 && !isScanning && (
+                    <tr>
+                      <td colSpan={3} className="p-6 text-center italic" style={{ color: COLORS.textMuted }}>
+                        No COM ports found or scanning not started.
+                      </td>
+                    </tr>
                   )}
-                </div>
-              </div>
-            ))}
-          </div>
+                </tbody>
+              </table>
+            </div>
+
+            {/* SERIAL CONNECTION ACTIONS */}
+            <div className="flex items-center justify-center gap-4 mt-8">
+              <span className="text-right" style={{ color: COLORS.textMuted }}>COM Port</span>
+              <input 
+                type="text" 
+                value={comPort} 
+                onChange={(e) => setComPort(e.target.value)}
+                className="border rounded px-3 py-1.5 w-32 outline-none shadow-inner text-white focus:border-blue-500 transition-colors"
+                style={{ backgroundColor: COLORS.bg, borderColor: COLORS.border }}
+              />
+              
+              <span className="text-right ml-4" style={{ color: COLORS.textMuted }}>Baud</span>
+              <select 
+                value={baudRate} 
+                onChange={(e) => setBaudRate(e.target.value)}
+                className="border rounded px-3 py-1.5 w-32 outline-none shadow-inner text-white focus:border-blue-500 transition-colors"
+                style={{ backgroundColor: COLORS.bg, borderColor: COLORS.border }}
+              >
+                <option value="9600">9600</option>
+                <option value="19200">19200</option>
+                <option value="38400">38400</option>
+                <option value="115200">115200</option>
+              </select>
+              
+              {!connectedState ? (
+                <button 
+                  onClick={handleConnectSerial}
+                  disabled={isConnecting}
+                  className="ml-4 border rounded px-8 py-1.5 shadow-sm focus:outline-none transition-colors disabled:opacity-50 hover:bg-blue-600 font-medium"
+                  style={{ backgroundColor: COLORS.primary, borderColor: COLORS.primary, color: 'white' }}
+                >
+                  {isConnecting ? 'Connecting...' : 'Connect'}
+                </button>
+              ) : (
+                <button 
+                  onClick={handleDisconnect}
+                  className="ml-4 border rounded px-6 py-1.5 shadow-sm focus:outline-none transition-colors hover:bg-red-600 font-medium"
+                  style={{ backgroundColor: COLORS.critical, borderColor: COLORS.critical, color: 'white' }}
+                >
+                  Disconnect
+                </button>
+              )}
+            </div>
+          </>
         )}
+
+        {/* BOTTOM STATUS */}
+        <div className="mt-8 text-center pt-6 border-t" style={{ borderColor: COLORS.border }}>
+          <p className="font-medium text-lg" style={{ color: connectedState ? COLORS.success : COLORS.textMuted }}>
+            Status: {statusMsg}
+          </p>
+        </div>
+
       </div>
     </div>
   );
-};
-
-export default DeviceManagementTab;
+}

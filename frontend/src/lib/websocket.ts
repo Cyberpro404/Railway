@@ -92,23 +92,23 @@ export interface WebSocketData {
 type WebSocketCallback = (data: WebSocketData) => void
 
 /**
- * Derive WebSocket URL from current page location or environment
+ * Derive WebSocket URL from current page location or environment.
+ * Uses the Vite dev-server proxy (/ws → ws://localhost:8000) so the
+ * browser never needs to reach port 8000 directly.  In production the
+ * same path is served by a reverse-proxy (nginx / caddy / etc.).
  */
 function deriveWebSocketUrl(): string {
-  // Check for explicit env var first
+  // Explicit override via .env (e.g. VITE_WS_URL=ws://192.168.1.10:8000/ws)
   const envUrl = import.meta.env.VITE_WS_URL
   if (envUrl) {
-    console.log('Using VITE_WS_URL:', envUrl)
+    console.log('[WS] Using VITE_WS_URL:', envUrl)
     return envUrl
   }
 
-  // Always connect to backend port 8000 for WebSocket
+  // Use same host:port as the page → Vite proxies /ws to backend
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  let host = window.location.hostname
-  if (host === 'localhost') host = '127.0.0.1'
-  const url = `${protocol}//${host}:8000/ws`
-
-  console.log('Derived WebSocket URL:', url)
+  const url = `${protocol}//${window.location.host}/ws`
+  console.log('[WS] Connecting via Vite proxy:', url)
   return url
 }
 

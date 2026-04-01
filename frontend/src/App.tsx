@@ -33,8 +33,7 @@ function App() {
           <Route path="/history" element={<ThresholdsSimple />} />
           <Route path="/alerts" element={<AlertsEnhanced />} />
           <Route path="/reports" element={<LogsDiagnostics />} />
-          <Route path="/connection" element={<ConnectionTab />} />
-          <Route path="/system" element={<ConnectionTab />} />
+
           <Route path="/settings" element={<ThresholdsSimple />} />
           <Route path="/devices" element={<DeviceManagementTab />} />
           <Route path="*" element={<NotFound />} />
@@ -45,4 +44,5 @@ function App() {
 }
 
 export default App
+
 

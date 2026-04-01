@@ -69,10 +69,10 @@ class NetworkScanner:
         return discovered
 
     @staticmethod
-    async def scan_serial_ports() -> List[str]:
+    async def scan_serial_ports() -> list:
         try:
             ports = await asyncio.to_thread(serial.tools.list_ports.comports)
-            return sorted([port.device for port in ports])
+            return sorted([{"device": p.device, "description": p.description, "hwid": p.hwid or "Unknown"} for p in ports], key=lambda x: x["device"])
         except Exception as exc:
             logger.error("Serial port scan failed: %s", exc)
             return []

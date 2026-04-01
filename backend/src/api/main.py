@@ -9,7 +9,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, HTTPException, Depends, Query, Body
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from auth_simple import User, TokenData, verify_token
 from fastapi.responses import FileResponse, JSONResponse
 
 # Import system components
@@ -29,10 +29,10 @@ from storage.database import (
     Device, RawData, Alert, AlertSeverity, AlertStatus, DefectDetection,
     Event, DataExport, SystemStatus
 )
-from api.device_management_simple import router as device_router
+from device_management_simple import router as device_router
 
 logger = logging.getLogger(__name__)
-security = HTTPBearer()
+# security = HTTPBearer()  # Temporarily disabled
 
 # Global instances
 device_manager: Optional[MultiDXMManager] = None
@@ -56,10 +56,11 @@ def get_db_session():
         session.close()
 
 
-async def verify_token(credentials: HTTPAuthorizationCredentials = Depends(security)):
-    """JWT token verification (placeholder)"""
-    # TODO: Implement proper JWT verification
-    return credentials.credentials
+async def verify_auth_token(token: str = None):
+    """JWT token verification (simplified)"""
+    if not token:
+        return None
+    return verify_token(token)
 
 
 @asynccontextmanager
@@ -503,7 +504,7 @@ async def export_data(
     end_time: datetime = Query(...),
     device_ids: Optional[List[str]] = Query(None),
     data_types: List[str] = Query(["raw", "processed"]),
-    format: str = Query("csv", regex="^(csv|json)$")
+    format: str = Query("csv", pattern="^(csv|json)$")
 ):
     """
     Download data for a specified time range.
@@ -627,3 +628,14 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.now().isoformat()
     }
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "main:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True,
+        log_level="info"
+    )
