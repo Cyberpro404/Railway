@@ -38,11 +38,17 @@ export default function DeviceManagementTab() {
   useEffect(() => {
     const handleData = (newData: WebSocketData) => {
       if (newData.connection_status) {
-        setConnectedState(newData.connection_status.connected);
-        if (newData.connection_status.connected) {
-          setStatusMsg(`Connected via ${newData.connection_status.port || 'TCP'} to ${newData.connection_status.port || 'Device'}`);
-        } else {
-          setStatusMsg('Not Connected');
+        const isConn = newData.connection_status.connected;
+        setConnectedState(isConn);
+        const sensorStatus = newData.sensor_data?.sensor_status;
+        if (isConn && sensorStatus === 'live') {
+          setStatusMsg(`Connected to ${newData.connection_status.port || 'device'} — live polling active`);
+        } else if (isConn && sensorStatus === 'connecting') {
+          setStatusMsg(`Connecting to ${newData.connection_status.port || 'device'} — awaiting first poll…`);
+        } else if (!isConn && sensorStatus === 'stale') {
+          setStatusMsg(`Reconnecting to ${newData.connection_status.port || 'device'} — showing last known data`);
+        } else if (!isConn) {
+          setStatusMsg('Not Connected — enter device IP and click Connect');
         }
       }
     };
@@ -114,7 +120,7 @@ export default function DeviceManagementTab() {
 
   const handleConnectTcp = async () => {
     setIsConnecting(true);
-    setStatusMsg(`Connecting to TCP/IP ${ipAddress}...`);
+    setStatusMsg(`Connecting to TCP/IP ${ipAddress}:502...`);
     try {
       const response = await fetch('/api/v1/connection/connect', {
         method: 'POST',
@@ -124,24 +130,25 @@ export default function DeviceManagementTab() {
           host: ipAddress,
           port: 502,
           slave_id: 1,
-          timeout: 2.5
+          timeout: 5.0
         })
       });
-      if (response.ok) {
+      const data = await response.json();
+      if (response.ok && data.success) {
         setConnectedState(true);
-        setStatusMsg(`Connected to ${ipAddress}`);
+        setStatusMsg(`Connected to ${ipAddress} — live polling active`);
       } else {
-        setStatusMsg('TCP Connection Failed');
+        setStatusMsg(data.message || 'TCP Connection Failed — check IP address and device power');
       }
     } catch (error) {
-      setStatusMsg('TCP Connection Error');
+      setStatusMsg('TCP Connection Error — backend unreachable');
     }
     setIsConnecting(false);
   };
 
   const handleConnectSerial = async () => {
     setIsConnecting(true);
-    setStatusMsg(`Connecting to Serial ${comPort}...`);
+    setStatusMsg(`Connecting to Serial ${comPort} @ ${baudRate} baud...`);
     try {
       const response = await fetch('/api/v1/connection/connect', {
         method: 'POST',
@@ -150,18 +157,20 @@ export default function DeviceManagementTab() {
           protocol: 'RTU',
           port: comPort,
           baudrate: parseInt(baudRate),
+          baud: parseInt(baudRate),
           slave_id: 1,
-          timeout: 2.5
+          timeout: 5.0
         })
       });
-      if (response.ok) {
+      const data = await response.json();
+      if (response.ok && data.success) {
         setConnectedState(true);
-        setStatusMsg(`Connected to ${comPort}`);
+        setStatusMsg(`Connected to ${comPort} — live polling active`);
       } else {
-        setStatusMsg('Serial Connection Failed');
+        setStatusMsg(data.message || 'Serial Connection Failed — check port and baud rate');
       }
     } catch (error) {
-      setStatusMsg('Serial Connection Error');
+      setStatusMsg('Serial Connection Error — backend unreachable');
     }
     setIsConnecting(false);
   };

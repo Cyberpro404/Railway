@@ -1,50 +1,10 @@
 [
   {
-    "id": "ctrl-1",
+    "id": "c1",
     "parameter": "z_rms",
-    "parameterLabel": "Z-Axis RMS",
-    "unit": "mm/s",
+    "parameterLabel": null,
+    "unit": null,
     "warningLimit": 2.0,
     "alertLimit": 4.0
-  },
-  {
-    "id": "ctrl-2",
-    "parameter": "x_rms",
-    "parameterLabel": "X-Axis RMS",
-    "unit": "mm/s",
-    "warningLimit": 2.0,
-    "alertLimit": 4.0
-  },
-  {
-    "id": "ctrl-3",
-    "parameter": "temperature",
-    "parameterLabel": "Temperature",
-    "unit": "\u00c2\u00b0C",
-    "warningLimit": 40.0,
-    "alertLimit": 50.0
-  },
-  {
-    "id": "ctrl-4",
-    "parameter": "z_accel",
-    "parameterLabel": "Z-Peak Accel",
-    "unit": "G",
-    "warningLimit": 2.0,
-    "alertLimit": 4.0
-  },
-  {
-    "id": "ctrl-5",
-    "parameter": "x_accel",
-    "parameterLabel": "X-Peak Accel",
-    "unit": "G",
-    "warningLimit": 2.0,
-    "alertLimit": 4.0
-  },
-  {
-    "id": "ctrl-6",
-    "parameter": "kurtosis",
-    "parameterLabel": "Kurtosis",
-    "unit": "",
-    "warningLimit": 4.0,
-    "alertLimit": 6.0
   }
 ]

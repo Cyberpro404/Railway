@@ -48,7 +48,7 @@ class DeviceConnectionResult(BaseModel):
     error_message: Optional[str]
 
 # Router
-router = APIRouter(prefix="/api/v1/devices", tags=["devices"])
+router = APIRouter(tags=["devices"])
 
 # Global state
 active_scans: Dict[str, Dict[str, Any]] = {}

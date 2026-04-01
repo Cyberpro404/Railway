@@ -166,16 +166,9 @@ export default function AnalyticsTab() {
     { id: 'data', name: 'Data', icon: <Database className="w-4 h-4" /> }
   ]
 
-  if (!data || chartData.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <div className="w-12 h-12 border-4 border-primary/20 border-t-primary rounded-full animate-spin mx-auto mb-4" />
-          <div className="text-text-muted font-medium">Loading Analytics...</div>
-        </div>
-      </div>
-    )
-  }
+  // Show page immediately — charts will populate as WS data arrives
+  const isConnected = data?.connection_status?.connected ?? false
+  const hasData = chartData.length > 0
 
   return (
     <div className="space-y-6 p-6 bg-gradient-to-br from-background via-background to-background/95">
@@ -203,15 +196,37 @@ export default function AnalyticsTab() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          {/* Connection Status */}
-          <div className="px-4 py-2.5 bg-gradient-to-r from-success/10 to-success/5 border border-success/30 rounded-xl flex items-center gap-2.5 shadow-lg shadow-success/10 backdrop-blur-sm">
+          {/* Connection Status — driven by real WS state */}
+          <div className={`px-4 py-2.5 bg-gradient-to-r rounded-xl flex items-center gap-2.5 shadow-lg backdrop-blur-sm ${
+            data?.connection_status && (data.connection_status as any).stale
+              ? 'from-warning/10 to-warning/5 border border-warning/30 shadow-warning/10'
+              : isConnected
+              ? 'from-success/10 to-success/5 border border-success/30 shadow-success/10'
+              : 'from-critical/10 to-critical/5 border border-critical/30 shadow-critical/10'
+          }`}>
             <div className="relative">
-              <CheckCircle className="w-5 h-5 text-success" />
-              <div className="absolute -top-1 -right-1 w-2 h-2 bg-success rounded-full animate-pulse" />
+              {data?.connection_status && (data.connection_status as any).stale 
+                ? <AlertTriangle className="w-5 h-5 text-warning" />
+                : isConnected
+                ? <CheckCircle className="w-5 h-5 text-success" />
+                : <AlertTriangle className="w-5 h-5 text-critical" />}
+              {isConnected && !(data?.connection_status as any)?.stale && <div className="absolute -top-1 -right-1 w-2 h-2 bg-success rounded-full animate-pulse" />}
             </div>
             <div className="flex flex-col">
-              <span className="font-bold text-success text-sm">System Healthy</span>
-              <span className="text-xs text-success/70">Real-time Active</span>
+              <span className={`font-bold text-sm ${
+                (data?.connection_status as any)?.stale ? 'text-warning'
+                  : isConnected ? 'text-success'
+                  : 'text-critical'
+              }`}>
+                {(data?.connection_status as any)?.stale ? 'Reconnecting…' : isConnected ? 'Device Connected' : 'No Device'}
+              </span>
+              <span className={`text-xs ${
+                (data?.connection_status as any)?.stale ? 'text-warning/70'
+                  : isConnected ? 'text-success/70'
+                  : 'text-critical/70'
+              }`}>
+                {(data?.connection_status as any)?.stale ? 'Showing last known data' : isConnected ? `${data?.connection_status?.port || 'Live'}` : 'Connect a device first'}
+              </span>
             </div>
           </div>
           
@@ -220,7 +235,7 @@ export default function AnalyticsTab() {
             <Database className="w-5 h-5 text-primary" />
             <div className="flex flex-col">
               <span className="font-bold text-primary text-sm">Data Quality</span>
-              <span className="text-xs text-primary/70">{data?.sensor_data?.data_quality?.toFixed(1) || '98.0'}%</span>
+              <span className="text-xs text-primary/70">{data?.sensor_data?.data_quality?.toFixed(1) ?? (isConnected ? '95.0' : '0.0')}%</span>
             </div>
           </div>
           

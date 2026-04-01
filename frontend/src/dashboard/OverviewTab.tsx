@@ -105,20 +105,45 @@ const OverviewTab: React.FC = () => {
 
       if (newData.ml_prediction) {
         const isDefect = newData.ml_prediction.class === 1
-        const defectType = isDefect ? 'WHEEL FLAT DETECTED' : 'NORMAL'
-        const confidence = newData.ml_prediction.confidence || 0.87
-        
-        setDefectType(defectType)
-        setConfidence(confidence * 100)
+        const defectLabel = isDefect ? 'WHEEL FLAT DETECTED' : 'MONITORING NORMAL'
+        const conf = newData.ml_prediction.confidence || 0.87
+
+        setDefectType(defectLabel)
+        setConfidence(parseFloat((conf * 100).toFixed(1)))
         setSeverity(isDefect ? 'critical' : 'normal')
+      }
+
+      // Build a synthetic waveform from actual z_rms so charts show real-derived signal
+      if (newData.sensor_data) {
+        const zRms = newData.sensor_data.z_rms || 0
+        const xRms = newData.sensor_data.x_rms || 0
+        const zFreq = (newData.sensor_data as any).z_peak_freq || 10
+        const amp = zRms * 0.7
+        const waveform = Array.from({ length: 200 }, (_, i) => ({
+          time: i,
+          amplitude: amp * Math.sin((2 * Math.PI * zFreq * i) / 200) +
+                     (xRms * 0.3) * Math.sin((2 * Math.PI * zFreq * 2 * i) / 200),
+        }))
+
+        // Build FFT-like spectrum from actual frequencies and amplitudes
+        const zKurt = (newData.sensor_data as any).z_kurtosis || 1
+        const fft = Array.from({ length: 100 }, (_, i) => {
+          const freq = i * 5
+          let amplitude = 5
+          if (Math.abs(freq - zFreq) < 10) amplitude = zRms * 15
+          if (Math.abs(freq - zFreq * 2) < 10) amplitude = zRms * 8
+          if (zKurt > 6 && Math.abs(freq - 100) < 15) amplitude += zKurt * 3
+          return { frequency: freq, amplitude: Math.max(0, amplitude) }
+        })
+
+        setWaveformData(waveform)
+        setFFTData(fft)
       }
     }
 
     const unsubscribe = wsClient.subscribe(handleData)
     return unsubscribe
   }, [])
-
-  
 
   const isConnected = data?.connection_status?.connected ?? false
 

@@ -3,20 +3,41 @@ import { wsClient, WebSocketData } from '../lib/websocket'
 import { Activity, Zap, Server, AlertTriangle, TrendingUp, TrendingDown, Thermometer, Train, ServerCrash, CheckCircle2 } from 'lucide-react'
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine } from 'recharts'
 
-// Mock Fleet Data Generator for the Dashboard (simulates backend multi-device state)
-const generateFleetStatus = (realDataMap: any) => {
+// Stable placeholder values per coach index (no Math.random — values never change unexpectedly)
+const FLEET_PLACEHOLDERS = [
+  { vib: '2.34', temp: '47.2', status: 'healthy' },
+  { vib: '1.87', temp: '44.8', status: 'healthy' },
+  { vib: '2.91', temp: '49.1', status: 'healthy' },
+  { vib: '5.12', temp: '58.3', status: 'critical' },
+  { vib: '2.05', temp: '46.0', status: 'healthy' },
+  { vib: '2.63', temp: '48.5', status: 'healthy' },
+  { vib: '3.74', temp: '53.2', status: 'warning' },
+  { vib: '1.95', temp: '45.7', status: 'healthy' },
+  { vib: '2.18', temp: '47.9', status: 'healthy' },
+  { vib: '2.47', temp: '48.1', status: 'healthy' },
+  { vib: '2.02', temp: '46.4', status: 'healthy' },
+]
+
+// Fleet Data — coach 1 always uses real WS data, others show stable placeholders
+const generateFleetStatus = (realDataMap: any, isConn: boolean) => {
   const fleet = []
   for (let i = 1; i <= 12; i++) {
-    const isReal = i === 1 // First coach gets the real websocket data
+    const isReal = i === 1
     const id = `COACH-${1000 + i}`
-    
+    const ph = FLEET_PLACEHOLDERS[(i - 2 + 11) % 11] // stable placeholder
+
     fleet.push({
       id,
-      status: isReal && realDataMap ? (realDataMap.alarm_status === 'Critical' ? 'critical' : realDataMap.alarm_status === 'Warning' ? 'warning' : 'healthy') : (i === 4 ? 'critical' : i === 7 ? 'warning' : 'healthy'),
-      vibration: isReal && realDataMap ? realDataMap.z_rms?.toFixed(2) : (2.1 + Math.random() * 0.5).toFixed(2),
-      temp: isReal && realDataMap ? realDataMap.temperature?.toFixed(1) : (45 + Math.random() * 5).toFixed(1),
-      uptime: isReal ? '99.9%' : '99.9%',
-      lastPing: '2s ago'
+      status: isReal
+        ? (isConn
+            ? (realDataMap?.alarm_status === 'Critical' ? 'critical'
+               : realDataMap?.alarm_status === 'Warning' ? 'warning' : 'healthy')
+            : 'offline')
+        : ph.status,
+      vibration: isReal && realDataMap ? realDataMap.z_rms?.toFixed(2) : ph.vib,
+      temp: isReal && realDataMap ? realDataMap.temperature?.toFixed(1) : ph.temp,
+      uptime: '99.9%',
+      lastPing: isReal ? '1s ago' : '—'
     })
   }
   return fleet
@@ -61,11 +82,14 @@ export default function NewDashboard() {
     return unsubscribe
   }, [])
 
-  // Fleet merged data
-  const fleetData = useMemo(() => generateFleetStatus(data?.sensor_data), [data])
-
   // System States
   const isConnected = data?.connection_status?.connected ?? false
+
+  // Fleet merged data — pass isConnected so coach 1 shows offline when disconnected
+  const fleetData = useMemo(
+    () => generateFleetStatus(data?.sensor_data, isConnected),
+    [data, isConnected]
+  )
   const activeDevice = fleetData[0]
 
   return (

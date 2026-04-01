@@ -139,7 +139,8 @@ export const alertsAPI = {
   
   getActive: async (): Promise<Alert[]> => {
     const response = await api.get('/alerts/active')
-    return response.data
+    // Backend returns {alerts: [...]}
+    return response.data?.alerts ?? response.data ?? []
   },
   
   create: async (alert: Partial<Alert>): Promise<Alert> => {

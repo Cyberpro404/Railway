@@ -58,7 +58,12 @@ class UnifiedModbusClient:
                 timeout=timeout,
             )
             self.client = AsyncModbusTcpClient(host=host, port=port, timeout=timeout)
-            self.connected = await self.client.connect()
+            try:
+                # Force timeout on connect since pymodbus connect() can hang indefinitely
+                self.connected = await asyncio.wait_for(self.client.connect(), timeout=timeout)
+            except (asyncio.TimeoutError, Exception) as exc:
+                logger.error("TCP connect error/timeout: %s", exc)
+                self.connected = False
             self.connection_type = "TCP" if self.connected else "NONE"
             return self.connected
 
@@ -80,7 +85,12 @@ class UnifiedModbusClient:
                 stopbits=1,
                 timeout=timeout,
             )
-            self.connected = await self.client.connect()
+            try:
+                # Force timeout on connect to prevent deadlocks/hanging
+                self.connected = await asyncio.wait_for(self.client.connect(), timeout=timeout)
+            except (asyncio.TimeoutError, Exception) as exc:
+                logger.error("RTU connect error/timeout: %s", exc)
+                self.connected = False
             self.connection_type = "RTU" if self.connected else "NONE"
             return self.connected
 
@@ -95,7 +105,8 @@ class UnifiedModbusClient:
         self.connection_type = "NONE"
 
     async def read_holding_registers(self, address: int, count: int, slave_id: int = 1) -> Optional[List[int]]:
-        if not self.client or not self.connected:
+        if not self.client or not self.client.connected:
+            self.connected = False
             return None
         try:
             response = await self.client.read_holding_registers(address, count=count, slave=slave_id)
@@ -118,4 +129,7 @@ class UnifiedModbusClient:
         return registers is not None
 
     def is_connected(self) -> bool:
+        # Reflect actual pymodbus socket state, not just our flag
+        if self.client is not None:
+            self.connected = bool(self.client.connected)
         return self.connected

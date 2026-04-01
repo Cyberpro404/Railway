@@ -40,23 +40,38 @@ export default function MLTab() {
     return unsubscribe
   }, [])
 
-  if (!data || !data.ml_prediction) {
+  // Use safe defaults so the page always renders — spinner only shown briefly before first WS tick
+  const isConnected = data?.connection_status?.connected ?? false
+  const hasData = data !== null
+
+  // If no WS data yet, show a brief connecting state (not an infinite spinner)
+  if (!hasData) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
         <div className="text-center">
-          <div className="w-20 h-20 mx-auto mb-6 relative">
+          <div className="w-16 h-16 mx-auto mb-4 relative">
             <div className="absolute inset-0 border-4 border-purple-500/30 rounded-full"></div>
             <div className="absolute inset-0 border-4 border-purple-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
-          <h2 className="text-2xl font-bold text-purple-400">Loading AI Model...</h2>
+          <h2 className="text-xl font-bold text-purple-400">Connecting to AI Engine…</h2>
+          <p className="text-slate-500 text-sm mt-2">Waiting for first sensor packet</p>
         </div>
       </div>
     )
   }
 
-  const ml = data.ml_prediction
+  // Safe defaults when ml_prediction is null (device not yet connected)
+  const ml = data.ml_prediction ?? {
+    class: 0,
+    class_name: 'no_data',
+    confidence: 0,
+    probabilities: { normal: 0, anomaly: 0 },
+    feature_importance: {} as Record<string, number>,
+    timestamp: '',
+  }
   const confidence = ml.confidence * 100
   const isAnomaly = ml.class === 1
+  const noData = ml.class_name === 'no_data' || (!isConnected && confidence === 0)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 p-6">
@@ -71,12 +86,19 @@ export default function MLTab() {
             <p className="text-slate-500 text-sm mt-1">Real-time anomaly detection & ML predictions</p>
           </div>
           <div className={`px-4 py-2 rounded-lg border ${
-            isAnomaly
+            noData
+              ? 'bg-slate-500/10 border-slate-500/30 text-slate-400'
+              : isAnomaly
               ? 'bg-red-500/10 border-red-500/30 text-red-400'
               : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
           }`}>
             <div className="flex items-center gap-2">
-              {isAnomaly ? (
+              {noData ? (
+                <>
+                  <AlertCircle className="w-5 h-5" />
+                  <span className="font-semibold">No Device Connected</span>
+                </>
+              ) : isAnomaly ? (
                 <>
                   <AlertCircle className="w-5 h-5" />
                   <span className="font-semibold">Anomaly Detected</span>
@@ -98,11 +120,14 @@ export default function MLTab() {
             <div className="relative bg-slate-900/90 backdrop-blur-xl border border-slate-800/50 rounded-2xl p-6">
               <p className="text-slate-400 text-xs font-semibold uppercase tracking-wider mb-2">Prediction Class</p>
               <div className="flex items-baseline gap-2">
-                <span className={`text-4xl font-bold ${isAnomaly ? 'text-red-400' : 'text-emerald-400'}`}>
-                  {ml.class_name}
+                <span className={`text-4xl font-bold ${
+                  noData ? 'text-slate-500'
+                  : isAnomaly ? 'text-red-400' : 'text-emerald-400'
+                }`}>
+                  {noData ? 'no device' : ml.class_name}
                 </span>
               </div>
-              <p className="text-slate-500 text-xs mt-2">{isAnomaly ? '⚠️ Action Required' : '✓ Stable'}</p>
+              <p className="text-slate-500 text-xs mt-2">{noData ? '— connect a device' : isAnomaly ? '⚠️ Action Required' : '✓ Stable'}</p>
             </div>
           </div>
 
